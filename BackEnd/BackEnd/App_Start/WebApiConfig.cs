@@ -1,4 +1,6 @@
-﻿using System.Web.Http;
+﻿using System.Linq;
+using System.Net.Http.Headers;
+using System.Web.Http;
 
 namespace BackEnd
 {
@@ -6,16 +8,16 @@ namespace BackEnd
     {
         public static void Register(HttpConfiguration config)
         {
-            // Конфигурация и службы веб-API
-
-            // Маршруты веб-API
             config.MapHttpAttributeRoutes();
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
+                routeTemplate: "api/{controller}/{action}"
             );
+
+            MediaTypeHeaderValue xmlTypeHeader = config.Formatters.XmlFormatter.SupportedMediaTypes
+                .FirstOrDefault(t => t.MediaType == "application/xml");
+            config.Formatters.XmlFormatter.SupportedMediaTypes.Remove(xmlTypeHeader);
         }
     }
 }
