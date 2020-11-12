@@ -3,7 +3,7 @@
 namespace DataAccess.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class TableAttribute : Attribute
+    internal class TableAttribute : Attribute
     {
         public string Name { get; private set; }
 

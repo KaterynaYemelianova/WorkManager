@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj": {}
+    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\BusinessLogic\\BusinessLogic.csproj": {}
   },
   "projects": {
-    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj": {
+    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\BusinessLogic\\BusinessLogic.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj",
-        "projectName": "DataAccess",
-        "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj",
+        "projectUniqueName": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\BusinessLogic\\BusinessLogic.csproj",
+        "projectName": "BusinessLogic",
+        "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\BusinessLogic\\BusinessLogic.csproj",
         "packagesPath": "C:\\Users\\Катя\\.nuget\\packages\\",
-        "outputPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\obj\\",
+        "outputPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\BusinessLogic\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Microsoft\\Xamarin\\NuGet\\"
@@ -51,10 +51,6 @@
               "target": "Package",
               "version": "[2.0.3, )",
               "autoReferenced": true
-            },
-            "System.Data.SqlClient": {
-              "target": "Package",
-              "version": "[4.8.2, )"
             }
           },
           "imports": [

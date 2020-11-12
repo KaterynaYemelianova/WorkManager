@@ -1,0 +1,4 @@
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\BusinessLogic.deps.json
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\BusinessLogic.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\obj\Debug\netstandard2.0\BusinessLogic.AssemblyInfoInputs.cache
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\obj\Debug\netstandard2.0\BusinessLogic.AssemblyInfo.cs

@@ -1,10 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataAccess.Attributes
 {
-    public class ColumnAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    internal class ColumnAttribute : Attribute
     {
+        public string Name { get; private set; }
+
+        public ColumnAttribute(string name)
+        {
+            Name = name;
+        }
     }
 }

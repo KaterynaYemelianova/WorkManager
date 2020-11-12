@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj": {}
+    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj": {}
   },
   "projects": {
-    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj": {
+    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj",
-        "projectName": "DataAccess",
-        "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj",
+        "projectUniqueName": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj",
+        "projectName": "Exceptions",
+        "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj",
         "packagesPath": "C:\\Users\\Катя\\.nuget\\packages\\",
-        "outputPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\obj\\",
+        "outputPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Microsoft\\Xamarin\\NuGet\\"
@@ -42,19 +42,11 @@
       "frameworks": {
         "netstandard2.0": {
           "dependencies": {
-            "Autofac": {
-              "target": "Package",
-              "version": "[6.0.0, )"
-            },
             "NETStandard.Library": {
               "suppressParent": "All",
               "target": "Package",
               "version": "[2.0.3, )",
               "autoReferenced": true
-            },
-            "System.Data.SqlClient": {
-              "target": "Package",
-              "version": "[4.8.2, )"
             }
           },
           "imports": [

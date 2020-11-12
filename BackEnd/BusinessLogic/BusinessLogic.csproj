@@ -5,14 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
+    <Folder Include="Models\" />
     <Folder Include="Exceptions\" />
-    <Folder Include="RepoContracts\" />
+    <Folder Include="ServiceContracts\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
-  
+
 </Project>

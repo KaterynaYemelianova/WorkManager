@@ -1,0 +1,5 @@
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\DataAccess\bin\Debug\netstandard2.0\DataAccess.deps.json
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\DataAccess\bin\Debug\netstandard2.0\DataAccess.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\DataAccess\obj\Debug\netstandard2.0\DataAccess.csprojAssemblyReference.cache
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\DataAccess\obj\Debug\netstandard2.0\DataAccess.AssemblyInfoInputs.cache
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\DataAccess\obj\Debug\netstandard2.0\DataAccess.AssemblyInfo.cs
