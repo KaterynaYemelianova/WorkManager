@@ -254,6 +254,16 @@
         "runtime": {
           "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {}
         }
+      },
+      "Exceptions/1.0.0": {
+        "type": "project",
+        "framework": ".NETStandard,Version=v2.0",
+        "compile": {
+          "bin/placeholder/Exceptions.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Exceptions.dll": {}
+        }
       }
     }
   },
@@ -962,11 +972,17 @@
         "useSharedDesignerContext.txt",
         "version.txt"
       ]
+    },
+    "Exceptions/1.0.0": {
+      "type": "project",
+      "path": "../Exceptions/Exceptions.csproj",
+      "msbuildProject": "../Exceptions/Exceptions.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETStandard,Version=v2.0": [
       "Autofac >= 6.0.0",
+      "Exceptions >= 1.0.0",
       "NETStandard.Library >= 2.0.3",
       "System.Data.SqlClient >= 4.8.2"
     ]
@@ -1001,7 +1017,12 @@
       },
       "frameworks": {
         "netstandard2.0": {
-          "projectReferences": {}
+          "targetAlias": "netstandard2.0",
+          "projectReferences": {
+            "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj": {
+              "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -1012,6 +1033,7 @@
     },
     "frameworks": {
       "netstandard2.0": {
+        "targetAlias": "netstandard2.0",
         "dependencies": {
           "Autofac": {
             "target": "Package",
@@ -1038,7 +1060,7 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.100\\RuntimeIdentifierGraph.json"
       }
     }
   }

@@ -1,4 +1,4 @@
-﻿namespace DataAccess.EntityContracts
+﻿namespace DataAccess.Entities
 {
     public interface IEntity
     {

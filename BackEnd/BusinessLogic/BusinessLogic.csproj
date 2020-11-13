@@ -15,4 +15,9 @@
     <PackageReference Include="Autofac" Version="6.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -8,11 +8,13 @@ using System.Linq.Expressions;
 using System.Collections.Generic;
 
 using DataAccess.Attributes;
-using DataAccess.EntityContracts;
+using DataAccess.Entities;
+
+using Exceptions.DataAccess;
 
 namespace DataAccess.Repos
 {
-    internal class RepoBase<TEntity> where TEntity : class, IEntity, new()
+    internal class RepoBase<TEntity> where TEntity : EntityBase, new()
     {
         protected string ConnectionString { get; set; }
 
@@ -183,7 +185,7 @@ namespace DataAccess.Repos
             return list.FirstOrDefault();
         }
 
-        private class InsertOutputEntity : IEntity
+        private class InsertOutputEntity : EntityBase
         {
             public int Id { get; private set; }
         }
