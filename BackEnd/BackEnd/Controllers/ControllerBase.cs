@@ -1,7 +1,8 @@
-﻿using Exceptions.BackEnd;
-using Exceptions.DataAccess;
+﻿using BackEnd.Dto.Output;
 
-using Newtonsoft.Json;
+using Exceptions;
+using Exceptions.BackEnd;
+using Exceptions.DataAccess;
 
 using System;
 using System.Collections.Generic;
@@ -22,47 +23,32 @@ namespace BackEnd.Controllers
             { typeof(NotFoundException), HttpStatusCode.NotFound }
         };
 
-        protected class Error
+        public async Task<HttpResponseMessage> Execute(Action<object> executor, object parameter)
         {
-            [JsonProperty("code")]
-            public HttpStatusCode Code { get; private set; }
-
-            [JsonProperty("error")]
-            public string Message { get; private set; }
-
-            public Error(HttpStatusCode code, string message)
-            {
-                Code = code;
-                Message = message;
-            }
-        }
-
-        public HttpResponseMessage Execute(Func<object> executor)
-        {
-            return ProtectedExecute(executor, null, false);
-        }
-
-        public HttpResponseMessage Execute(Func<object, object> executor, object parameter)
-        {
-            return ProtectedExecute(() => executor(parameter), parameter, true);
-        }
-
-        public async Task<HttpResponseMessage> Execute(Func<Task<object>> executor)
-        {
-            return await Task.Run(
-                () => ProtectedExecute(() => executor().GetAwaiter().GetResult(), null, false)
+            return await ProtectedExecute(
+                new Task<object>(() =>
+                {
+                    executor(parameter);
+                    return null;
+                }), parameter, true
             );
         }
 
-        public async Task<HttpResponseMessage> Execute(Func<object, Task<object>> executor, object parameter)
+        public async Task<HttpResponseMessage> Execute<Tout>(Task<Tout> executor)
         {
-            return await Task.Run(
-                () => ProtectedExecute(() => executor(parameter).GetAwaiter().GetResult(), parameter, true)
-            );
+            return await ProtectedExecute(executor, null, false);
         }
 
-        protected virtual void Validate()
+        public async Task<HttpResponseMessage> Execute<Tout>(Func<object, Task<Tout>> executor, object parameter)
         {
+            return await ProtectedExecute(executor(parameter), parameter, true);
+        }
+
+        protected virtual void ValidateModel(object parameter, bool mustHaveParameter = true)
+        {
+            if (mustHaveParameter && parameter == null)
+                throw new ValidationException("no data passed");
+
             ICollection<string> errors = new List<string>();
             foreach (KeyValuePair<string, ModelState> fieldState in ModelState)
                 foreach (ModelError error in fieldState.Value.Errors)
@@ -72,31 +58,33 @@ namespace BackEnd.Controllers
                 throw new ValidationException(errors);
         }
 
-        private HttpResponseMessage CreateErrorResponse(Exception ex)
+        private HttpResponseMessage CreateErrorResponse(ServerException ex)
         {
             Type type = ex.GetType();
 
             if (ErrorStatusCodes.ContainsKey(type))
             {
-                Error error = new Error(ErrorStatusCodes[type], ex.Message);
-                return Request.CreateResponse(error.Code, error);
+                Response response = new Response() { Error = ex };
+                return Request.CreateResponse(ErrorStatusCodes[type], response);
             }
 
             throw ex;
         }
 
-        private HttpResponseMessage ProtectedExecute(Func<object> executor, object parameter, bool mustHaveParameter)
+        private HttpResponseMessage CreateResponse(object data)
+        {
+            Response response = new Response() { Data = data };
+            return Request.CreateResponse(HttpStatusCode.OK, response);
+        }
+
+        private async Task<HttpResponseMessage> ProtectedExecute<Tout>(Task<Tout> task, object parameter, bool mustHaveParameter)
         {
             try
             {
-                if (mustHaveParameter && parameter == null)
-                    throw new ValidationException("no data passed");
-
-                Validate();
-
-                return Request.CreateResponse(HttpStatusCode.OK, executor());
+                ValidateModel(parameter, mustHaveParameter);
+                return CreateResponse(await task);
             }
-            catch (Exception ex) { return CreateErrorResponse(ex); }
+            catch (ServerException ex) { return CreateErrorResponse(ex); }
         }
     }
 }

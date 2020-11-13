@@ -1,5 +1,8 @@
 ﻿using Autofac;
 
+using DataAccess.RepoContracts;
+using DataAccess.Repos;
+
 namespace DataAccess
 {
     public static class DataAccessDependencyHolder
@@ -20,7 +23,7 @@ namespace DataAccess
         {
             ContainerBuilder builder = new ContainerBuilder();
 
-            //TODO
+            builder.RegisterType<AccountRepo>().As<IAccountRepo>().SingleInstance();
 
             return builder.Build();
         }

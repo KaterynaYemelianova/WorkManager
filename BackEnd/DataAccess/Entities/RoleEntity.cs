@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataAccess.Entities
 {
-    public class EnterEvent : EntityBase
+    public class RoleEntity : EntityBase
     {
     }
 }

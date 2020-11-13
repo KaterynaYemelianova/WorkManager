@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataAccess.Entities
 {
-    public class WorkTaskPositionCompleteEvent : EntityBase
+    public class WorkTaskPositionEntity : EntityBase
     {
     }
 }

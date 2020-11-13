@@ -1,6 +1,6 @@
 ﻿namespace DataAccess.Entities
 {
-    public class EntityBase : IEntity
+    public class EntityBase
     {
         public int Id { get; set; }
     }

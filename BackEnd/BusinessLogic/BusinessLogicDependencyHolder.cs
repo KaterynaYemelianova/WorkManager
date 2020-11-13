@@ -1,5 +1,8 @@
 ﻿using Autofac;
 
+using BusinessLogic.ServiceContracts;
+using BusinessLogic.Services;
+
 namespace BusinessLogic
 {
     public static class BusinessLogicDependencyHolder
@@ -20,7 +23,7 @@ namespace BusinessLogic
         {
             ContainerBuilder builder = new ContainerBuilder();
 
-            //TODO
+            builder.RegisterType<AuthService>().As<IAuthService>().SingleInstance();
 
             return builder.Build();
         }

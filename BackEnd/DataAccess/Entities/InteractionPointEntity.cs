@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataAccess.Entities
 {
-    public class Account : EntityBase
+    public class InteractionPointEntity : EntityBase
     {
     }
 }

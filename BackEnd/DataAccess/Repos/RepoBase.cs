@@ -9,14 +9,18 @@ using System.Collections.Generic;
 
 using DataAccess.Attributes;
 using DataAccess.Entities;
+using DataAccess.RepoContracts;
 
 using Exceptions.DataAccess;
 
+
 namespace DataAccess.Repos
 {
-    internal class RepoBase<TEntity> where TEntity : EntityBase, new()
+    internal abstract class RepoBase<TEntity> : IRepo<TEntity> where TEntity : EntityBase, new()
     {
-        protected string ConnectionString { get; set; }
+        #region Properties
+
+        protected abstract string ConnectionString { get; }
 
         protected string TableName { get; set; }
 
@@ -29,11 +33,142 @@ namespace DataAccess.Repos
         protected IEnumerable<string> ColumnsExceptKey { get; set; }
         protected IEnumerable<PropertyInfo> PropertiesExceptKey { get; set; }
 
-        public RepoBase(string connectionString)
+        #endregion
+
+        #region Constructors
+
+        public RepoBase()
         {
             InitMetaData();
-            ConnectionString = connectionString;
         }
+
+        #endregion
+
+        #region Methods
+        #region Public
+
+        public virtual async Task<IEnumerable<TEntity>> Get(int limit)
+        {
+            return await GetLimited(limit);
+        }
+
+        public virtual async Task<IEnumerable<TEntity>> Get()
+        {
+            return await GetLimited(-1);
+        }
+
+        public virtual async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value, int limit)
+        {
+            return await GetLimited(expression, value, limit);
+        }
+
+        public virtual async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value)
+        {
+            return await GetLimited(expression, value, -1);
+        }
+
+        public async Task<TEntity> GetById(int id)
+        {
+            return await FirstOrDefault(entity => entity.Id, id);
+        }
+
+        public virtual async Task<TEntity> FirstOrDefault(Expression<Func<TEntity, object>> expression, object value)
+        {
+            IEnumerable<TEntity> list = await GetLimited(expression, value, 1);
+            return list.FirstOrDefault();
+        }
+
+        public virtual async Task<TEntity> Insert(TEntity entity)
+        {
+            int id = await InsertEntity(entity);
+            return await FirstOrDefault(e => e.Id, id);
+        }
+
+        public virtual async Task<TEntity> Update(TEntity entity)
+        {
+            int id = (int)KeyProperty.GetValue(entity);
+            TEntity current = await FirstOrDefault(stored => stored.Id, id);
+
+            if (current == null)
+                throw new NotFoundException("entity with such id");
+
+            IDictionary<string, object> changedColumns = new Dictionary<string, object>();
+            foreach (PropertyInfo property in PropertiesExceptKey)
+            {
+                object storedValue = property.GetValue(current);
+                object updatedValue = property.GetValue(entity);
+
+                if (storedValue.Equals(updatedValue))
+                    continue;
+
+                changedColumns.Add(GetColumnByProperty(property), updatedValue);
+            }
+
+            if (changedColumns.Count == 0)
+                return current;
+
+            IEnumerable<string> changeQueryItems = changedColumns.Select(change => $"{change.Key} = @{change.Key}");
+            string setString = string.Join(", ", changeQueryItems);
+
+            string updateText = $"UPDATE {TableName}\n" +
+                                $"SET {setString}\n" +
+                                $"WHERE {KeyColumnName} = {id};";
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand updater = new SqlCommand(updateText, connection))
+            {
+                foreach (KeyValuePair<string, object> changedColumn in changedColumns)
+                    updater.Parameters.AddWithValue($"@{changedColumn.Key}", changedColumn.Value);
+
+                connection.Open();
+                await updater.ExecuteNonQueryAsync();
+            }
+
+            return await FirstOrDefault(updated => updated.Id, id);
+        }
+
+        public virtual async Task Delete(int id)
+        {
+            string deleteText = $"DELETE FROM {TableName}\n" +
+                                $"WHERE {KeyColumnName} = @id;";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand deleter = new SqlCommand(deleteText, connection))
+            {
+                deleter.Parameters.AddWithValue("@id", id);
+                connection.Open();
+                await deleter.ExecuteNonQueryAsync();
+            }
+        }
+
+        #endregion
+
+        #region Protected
+
+        protected virtual async Task<int> InsertEntity(TEntity entity)
+        {
+            string columns = string.Join(",", ColumnsExceptKey.Select(column => $"\"{column}\""));
+
+            IDictionary<string, object> parametersValues = GetParametersValues(ColumnsExceptKey, entity);
+            string parametersString = string.Join(",", parametersValues.Keys);
+
+            string insertText = $"INSERT INTO {TableName}({columns})\n" +
+                                $"OUTPUT INSERTED.ID\n" +
+                                $"VALUES({parametersString});";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand inserter = new SqlCommand(insertText, connection))
+            {
+                foreach (KeyValuePair<string, object> parameterValue in parametersValues)
+                    inserter.Parameters.AddWithValue(parameterValue.Key, parameterValue.Value);
+
+                connection.Open();
+                return (int)await inserter.ExecuteScalarAsync();
+            }
+        }
+
+        #endregion
+
+        #region Private
 
         private void InitMetaData()
         {
@@ -159,98 +294,7 @@ namespace DataAccess.Repos
             }
         }
 
-        public async Task<IEnumerable<TEntity>> Get(int limit)
-        {
-            return await GetLimited(limit);
-        }
-
-        public async Task<IEnumerable<TEntity>> Get()
-        {
-            return await GetLimited(-1);
-        }
-
-        public async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value, int limit)
-        {
-            return await GetLimited(expression, value, limit);
-        }
-
-        public async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value)
-        {
-            return await GetLimited(expression, value, -1);
-        }
-
-        public async Task<TEntity> FirstOrDefault(Expression<Func<TEntity, object>> expression, object value)
-        {
-            IEnumerable<TEntity> list = await GetLimited(expression, value, 1);
-            return list.FirstOrDefault();
-        }
-
-        private class InsertOutputEntity : EntityBase
-        {
-            public int Id { get; private set; }
-        }
-
-        public async Task<int> Insert(TEntity entity)
-        {
-            string columns = string.Join(",", ColumnsExceptKey.Select(column => $"\"{column}\""));
-
-            IDictionary<string, object> parametersValues = GetParametersValues(ColumnsExceptKey, entity);
-            string parametersString = string.Join(",", parametersValues.Keys);
-
-            string insertText = $"INSERT INTO {TableName}({columns})\n" +
-                                $"OUTPUT INSERTED.ID\n" +
-                                $"VALUES({parametersString});";
-            using (SqlConnection connection = new SqlConnection(ConnectionString))
-            using (SqlCommand inserter = new SqlCommand(insertText, connection))
-            {
-                foreach (KeyValuePair<string, object> parameterValue in parametersValues)
-                    inserter.Parameters.AddWithValue(parameterValue.Key, parameterValue.Value);
-
-                connection.Open();
-                return (int)await inserter.ExecuteScalarAsync();
-            }
-        }
-
-        public async Task<TEntity> Update(TEntity entity)
-        {
-            int id = (int)KeyProperty.GetValue(entity);
-            TEntity current = await FirstOrDefault(stored => stored.Id, id);
-
-            if (current == null)
-                throw new NotFoundException("entity with such id");
-
-            IDictionary<string, object> changedColumns = new Dictionary<string, object>();
-            foreach (PropertyInfo property in PropertiesExceptKey)
-            {
-                object storedValue = property.GetValue(current);
-                object updatedValue = property.GetValue(entity);
-
-                if (storedValue.Equals(updatedValue))
-                    continue;
-
-                changedColumns.Add(GetColumnByProperty(property), updatedValue);
-            }
-
-            if (changedColumns.Count == 0)
-                return current;
-
-            IEnumerable<string> changeQueryItems = changedColumns.Select(change => $"{change.Key} = @{change.Key}");
-            string setString = string.Join(", ", changeQueryItems);
-
-            string updateText = $"UPDATE {TableName}\n" +
-                                $"SET {setString}\n" +
-                                $"WHERE {KeyColumnName} = {id};";
-            using (SqlConnection connection = new SqlConnection(ConnectionString))
-            using (SqlCommand updater = new SqlCommand(updateText, connection))
-            {
-                foreach (KeyValuePair<string, object> changedColumn in changedColumns)
-                    updater.Parameters.AddWithValue($"@{changedColumn.Key}", changedColumn.Value);
-
-                connection.Open();
-                await updater.ExecuteNonQueryAsync();
-            }
-
-            return await FirstOrDefault(updated => updated.Id, id);
-        }
+        #endregion
+        #endregion
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataAccess.Entities
 {
-    public class ControlPoint : EntityBase
+    public class RoomEntity : EntityBase
     {
     }
 }

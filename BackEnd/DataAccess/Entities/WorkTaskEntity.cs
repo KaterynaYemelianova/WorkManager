@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DataAccess.Entities
 {
-    public class EnterPoint : EntityBase
+    public class WorkTaskEntity : EntityBase
     {
     }
 }
