@@ -18,9 +18,17 @@ namespace BusinessLogic.Services
 {
     internal class AuthService : IAuthService
     {
-        private static IAccountRepo AccountRepo = DataAccessDependencyHolder.Dependencies.Resolve<IAccountRepo>();
-        private static IAsymmetricEncryptionService EncryptionService = BusinessLogicDependencyHolder.Dependencies.Resolve<IAsymmetricEncryptionService>();
-        private static IHashingService HashingService = BusinessLogicDependencyHolder.Dependencies.Resolve<IHashingService>();
+        private static IAccountRepo AccountRepo = 
+            DataAccessDependencyHolder.Dependencies.Resolve<IAccountRepo>();
+
+        private static IAsymmetricEncryptionService EncryptionService = 
+            BusinessLogicDependencyHolder.Dependencies.Resolve<IAsymmetricEncryptionService>();
+
+        private static IHashingService HashingService = 
+            BusinessLogicDependencyHolder.Dependencies.Resolve<IHashingService>();
+
+        private static ISessionService SessionService =
+            BusinessLogicDependencyHolder.Dependencies.Resolve<ISessionService>();
 
         private static Regex PasswordPattern = new Regex("^[A-Za-z0-9]{8,32}$");
 
@@ -52,9 +60,20 @@ namespace BusinessLogic.Services
             return EntityModelMapper.Mapper.Map<AccountModel>(inserted);
         }
 
-        public Task<SessionModel> LogIn(LogInDto logInDto)
+        public async Task<SessionModel> LogIn(LogInDto logInDto)
         {
-            return null;
+            AccountEntity account = await AccountRepo.FirstOrDefault(acc => acc.Login, logInDto.Login);
+
+            if (account == null)
+                throw new AccountNotFoundException();
+
+            string saltedPassword = account.Password + logInDto.Salt;
+            string saltedPasswordHash = HashingService.GetHashUTF8(saltedPassword);
+
+            if (logInDto.PasswordSalted != saltedPasswordHash)
+                throw new WrongPasswordException();
+
+            return SessionService.CreateSessionFor(account.Id);
         }
     }
 }

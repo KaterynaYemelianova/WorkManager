@@ -27,11 +27,15 @@ namespace BackEnd.Controllers
         private static Dictionary<Type, HttpStatusCode> ErrorStatusCodes = new Dictionary<Type, HttpStatusCode>()
         {
             { typeof(ValidationException), HttpStatusCode.BadRequest },
-            { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized },
             { typeof(NotFoundException), HttpStatusCode.NotFound },
             { typeof(LoginDuplicationException), HttpStatusCode.Conflict },
             { typeof(InvalidPasswordException), HttpStatusCode.BadRequest },
-            { typeof(InvalidKeyException), HttpStatusCode.Unauthorized }
+            { typeof(InvalidKeyException), HttpStatusCode.Unauthorized },
+            { typeof(SessionNotFoundException), HttpStatusCode.Unauthorized },
+            { typeof(WrongSessionTokenException), HttpStatusCode.Unauthorized },
+            { typeof(SessionExpiredException), HttpStatusCode.Unauthorized },
+            { typeof(AccountNotFoundException), HttpStatusCode.NotFound },
+            { typeof(WrongPasswordException), HttpStatusCode.Unauthorized },
         };
 
         public async Task<HttpResponseMessage> Execute(Action<object> executor, object parameter)
