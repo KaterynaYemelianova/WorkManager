@@ -12,3 +12,11 @@ D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\obj\Debug\netst
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\obj\Debug\netstandard2.0\BusinessLogic.csproj.CopyComplete
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\obj\Debug\netstandard2.0\BusinessLogic.dll
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\obj\Debug\netstandard2.0\BusinessLogic.pdb
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\Dtos.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\System.ComponentModel.DataAnnotations.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\System.Configuration.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\System.Security.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\Dtos.pdb
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\System.ComponentModel.DataAnnotations.xml
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\System.Configuration.xml
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\BusinessLogic\bin\Debug\netstandard2.0\System.Security.xml

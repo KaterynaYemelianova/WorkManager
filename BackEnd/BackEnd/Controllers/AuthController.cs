@@ -4,6 +4,8 @@ using BusinessLogic;
 using BusinessLogic.Models;
 using BusinessLogic.ServiceContracts;
 
+using Dtos;
+
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -14,10 +16,11 @@ namespace BackEnd.Controllers
     {
         private static IAuthService AuthService = BusinessLogicDependencyHolder.Dependencies.Resolve<IAuthService>();
 
-        public async Task<HttpResponseMessage> CreateAccount([FromBody] AccountModel accountModel)
+        public async Task<HttpResponseMessage> SignUp([FromBody] SignUpDto signUpDto)
         {
             return await Execute(
-                AuthService.Create(accountModel)
+                dto => AuthService.Create(dto),
+                signUpDto
             );
         }
     }

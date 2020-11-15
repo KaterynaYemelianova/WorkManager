@@ -1,9 +1,9 @@
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\bin\Debug\netstandard2.0\Exceptions.deps.json
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\bin\Debug\netstandard2.0\Exceptions.dll
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\bin\Debug\netstandard2.0\Exceptions.pdb
-D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\obj\Debug\netstandard2.0\Exceptions.csprojAssemblyReference.cache
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\obj\Debug\netstandard2.0\Exceptions.AssemblyInfoInputs.cache
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\obj\Debug\netstandard2.0\Exceptions.AssemblyInfo.cs
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\obj\Debug\netstandard2.0\Exceptions.csproj.CoreCompileInputs.cache
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\obj\Debug\netstandard2.0\Exceptions.dll
 D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\obj\Debug\netstandard2.0\Exceptions.pdb
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Exceptions\obj\Debug\netstandard2.0\Exceptions.csprojAssemblyReference.cache

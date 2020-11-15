@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "L8ENovYMUTkVg2Fylug4487WWCpKc3syfqKJ5vkZFXDgpXKBReho46zZIza39bcPYx/bG8u3hdHt3AD2L6aHDA==",
+  "success": true,
+  "projectFilePath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Dtos\\Dtos.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Катя\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\Катя\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
+    "C:\\Users\\Катя\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

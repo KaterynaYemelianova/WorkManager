@@ -7,24 +7,45 @@ using DataAccess;
 using DataAccess.Entities;
 using DataAccess.RepoContracts;
 
+using Dtos;
+using Exceptions.BusinessLogic;
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace BusinessLogic.Services
 {
     internal class AuthService : IAuthService
     {
         private static IAccountRepo AccountRepo = DataAccessDependencyHolder.Dependencies.Resolve<IAccountRepo>();
+        private static IAsymmetricEncryptionService EncryptionService = BusinessLogicDependencyHolder.Dependencies.Resolve<IAsymmetricEncryptionService>();
+        private static IHashingService HashingService = BusinessLogicDependencyHolder.Dependencies.Resolve<IHashingService>();
 
-        public async Task<AccountModel> Create(AccountModel account)
+        private static Regex PasswordPattern = new Regex("^[A-Za-z0-9]{8,32}$");
+
+        public async Task<AccountModel> Create(SignUpDto signUpDto)
         {
-            AccountEntity entity = new AccountEntity()
-            {
-                Login = account.Login,
-                
-            };
+            if (await AccountRepo.GetByLogin(signUpDto.Login) != null)
+                throw new LoginDuplicationException();
 
-            return account;
+            PublicKeyModel key = DtoModelMapper.Mapper.Map<PublicKeyModel>(signUpDto.PublicKey);
+            string password = EncryptionService.Decrypt(signUpDto.PasswordEncrypted, key);
+
+            EncryptionService.DestroyKeyPair(key);
+
+            if (!PasswordPattern.IsMatch(password))
+                throw new InvalidPasswordException();
+
+            string passwordHash = HashingService.GetHashUTF8(password);
+
+            AccountModel account = DtoModelMapper.Mapper.Map<AccountModel>(signUpDto);
+            account.PasswordHash = passwordHash;
+
+            AccountEntity accountEntity = EntityModelMapper.Mapper.Map<AccountEntity>(account);
+            AccountEntity inserted = await AccountRepo.Insert(accountEntity);
+
+            return EntityModelMapper.Mapper.Map<AccountModel>(inserted);
         }
 
         public async Task<IEnumerable<AccountModel>> GetAccounts()

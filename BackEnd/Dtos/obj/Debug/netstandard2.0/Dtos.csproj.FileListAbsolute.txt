@@ -1,0 +1,16 @@
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\Dtos.deps.json
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\Dtos.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\Dtos.pdb
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\System.ComponentModel.DataAnnotations.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\System.Configuration.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\System.Security.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\System.ComponentModel.DataAnnotations.xml
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\System.Configuration.xml
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\bin\Debug\netstandard2.0\System.Security.xml
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\obj\Debug\netstandard2.0\Dtos.AssemblyInfoInputs.cache
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\obj\Debug\netstandard2.0\Dtos.AssemblyInfo.cs
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\obj\Debug\netstandard2.0\Dtos.csproj.CoreCompileInputs.cache
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\obj\Debug\netstandard2.0\Dtos.csproj.CopyComplete
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\obj\Debug\netstandard2.0\Dtos.dll
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\obj\Debug\netstandard2.0\Dtos.pdb
+D:\!!!Katia\NURE\АРК\Course\WorkManager\BackEnd\Dtos\obj\Debug\netstandard2.0\Dtos.csprojAssemblyReference.cache

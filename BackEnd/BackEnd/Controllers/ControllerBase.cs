@@ -1,8 +1,9 @@
-﻿using BackEnd.Dto.Output;
+﻿using BackEnd.Output;
 
 using Exceptions;
 using Exceptions.BackEnd;
 using Exceptions.DataAccess;
+using Exceptions.BusinessLogic;
 
 using System;
 using System.Collections.Generic;
@@ -14,23 +15,34 @@ using System.Web.Http.ModelBinding;
 
 namespace BackEnd.Controllers
 {
-    public class ControllerBase : ApiController
+    public abstract class ControllerBase : ApiController
     {
         private static Dictionary<Type, HttpStatusCode> ErrorStatusCodes = new Dictionary<Type, HttpStatusCode>()
         {
             { typeof(ValidationException), HttpStatusCode.BadRequest },
             { typeof(UnauthorizedAccessException), HttpStatusCode.Unauthorized },
-            { typeof(NotFoundException), HttpStatusCode.NotFound }
+            { typeof(NotFoundException), HttpStatusCode.NotFound },
+            { typeof(LoginDuplicationException), HttpStatusCode.Conflict },
+            { typeof(InvalidPasswordException), HttpStatusCode.BadRequest }
         };
 
         public async Task<HttpResponseMessage> Execute(Action<object> executor, object parameter)
         {
+            Func<object> func = new Func<object>(() =>
+            {
+                executor(parameter);
+                return null;
+            });
+
             return await ProtectedExecute(
-                new Task<object>(() =>
-                {
-                    executor(parameter);
-                    return null;
-                }), parameter, true
+                Task.Run(func), parameter, true
+            );
+        }
+
+        public async Task<HttpResponseMessage> Execute(Func<object> executor)
+        {
+            return await ProtectedExecute(
+                Task.Run(executor), null, false
             );
         }
 
@@ -39,7 +51,7 @@ namespace BackEnd.Controllers
             return await ProtectedExecute(executor, null, false);
         }
 
-        public async Task<HttpResponseMessage> Execute<Tout>(Func<object, Task<Tout>> executor, object parameter)
+        public async Task<HttpResponseMessage> Execute<Tin, Tout>(Func<Tin, Task<Tout>> executor, Tin parameter)
         {
             return await ProtectedExecute(executor(parameter), parameter, true);
         }
@@ -52,7 +64,7 @@ namespace BackEnd.Controllers
             ICollection<string> errors = new List<string>();
             foreach (KeyValuePair<string, ModelState> fieldState in ModelState)
                 foreach (ModelError error in fieldState.Value.Errors)
-                    errors.Add(error.ErrorMessage ?? error.Exception?.Message);
+                    errors.Add(error.ErrorMessage);
 
             if (errors.Count != 0)
                 throw new ValidationException(errors);
@@ -68,6 +80,7 @@ namespace BackEnd.Controllers
                 return Request.CreateResponse(ErrorStatusCodes[type], response);
             }
 
+            //log it
             throw ex;
         }
 

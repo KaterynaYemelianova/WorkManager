@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 using System.Linq;
 using System.Linq.Expressions;
@@ -18,6 +19,12 @@ namespace DataAccess.Repos
 {
     internal abstract class RepoBase<TEntity> : IRepo<TEntity> where TEntity : EntityBase, new()
     {
+        #region Fields
+
+        private Regex UpperLetterPattern = new Regex("[A-Z]+");
+
+        #endregion
+
         #region Properties
 
         protected abstract string ConnectionString { get; }
@@ -172,23 +179,35 @@ namespace DataAccess.Repos
 
         private void InitMetaData()
         {
+            Properties = typeof(TEntity).GetProperties().Where(property => property.GetCustomAttribute<IgnoreAttribute>() == null);
+            Columns = Properties.Select(property => GetColumnByProperty(property)).ToList();
+
             KeyProperty = GetKeyProperty();
             KeyColumnName = GetColumnByProperty(KeyProperty);
-
-            Properties = typeof(TEntity).GetProperties();
-            Columns = Properties.Select(property => GetColumnByProperty(property)).ToList();
 
             PropertiesExceptKey = Properties.Where(property => property.Name != KeyProperty.Name).ToList();
             ColumnsExceptKey = Columns.Where(column => column != KeyColumnName).ToList();
 
-            TableName = typeof(TEntity).GetCustomAttribute<TableAttribute>()?.Name ?? nameof(TEntity).ToLower();
+            TableName = typeof(TEntity).GetCustomAttribute<TableAttribute>()?.Name ?? ParseDefaultTableName();
+        }
+
+        private string ParseDefaultName(string name)
+        {
+            return UpperLetterPattern.Replace(name, "_$0").ToLower().Trim('_');
+        }
+
+        private string ParseDefaultTableName()
+        {
+            return ParseDefaultName(
+                typeof(TEntity).Name.Replace("Entity", "")
+            );
         }
 
         private PropertyInfo GetKeyProperty()
         {
-            return typeof(TEntity).GetProperties().FirstOrDefault(
-                property => property.Name.ToLower() == "id" || property.GetCustomAttribute<KeyAttribute>() != null
-            );
+            return Properties.FirstOrDefault(property => property.GetCustomAttribute<KeyAttribute>() != null) ??
+                   Properties.FirstOrDefault(property => property.Name.ToLower() == "id") ?? 
+                   throw new InvalidOperationException("No key property found");
         }
 
         private IDictionary<string, object> GetParametersValues(IEnumerable<string> columns, TEntity entity)
@@ -199,20 +218,25 @@ namespace DataAccess.Repos
             );
         }
 
+        private string ParseDefaultPropertyNameToColumnName(PropertyInfo property)
+        {
+            return ParseDefaultName(property.Name);
+        }
+
         private string GetColumnByProperty(PropertyInfo property)
         {
             if (property == null)
                 return null;
 
-            return property.GetCustomAttribute<ColumnAttribute>()?.Name ?? property.Name.ToLower();
+            return property.GetCustomAttribute<ColumnAttribute>()?.Name ?? 
+                   ParseDefaultPropertyNameToColumnName(property);
         }
 
         private PropertyInfo GetPropertyByColumn(string column)
         {
-            PropertyInfo[] properties = typeof(TEntity).GetProperties();
-
-            return properties.FirstOrDefault(property => property.GetCustomAttribute<ColumnAttribute>()?.Name == column) ??
-                   properties.FirstOrDefault(property => property.Name.ToLower() == column.ToLower());
+            return Properties.FirstOrDefault(property => property.GetCustomAttribute<ColumnAttribute>()?.Name == column) ??
+                   Properties.FirstOrDefault(property => ParseDefaultPropertyNameToColumnName(property) == column) ??
+                   throw new InvalidOperationException("No property for column found");
         }
 
         private TEntity Fetch(SqlDataReader reader)

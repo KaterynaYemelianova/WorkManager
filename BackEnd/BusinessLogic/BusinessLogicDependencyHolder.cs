@@ -24,6 +24,8 @@ namespace BusinessLogic
             ContainerBuilder builder = new ContainerBuilder();
 
             builder.RegisterType<AuthService>().As<IAuthService>().SingleInstance();
+            builder.RegisterType<RSAService>().As<IAsymmetricEncryptionService>().SingleInstance();
+            builder.RegisterType<SHA256HashingService>().As<IHashingService>().SingleInstance();
 
             return builder.Build();
         }

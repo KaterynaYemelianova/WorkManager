@@ -35,6 +35,9 @@
               "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj": {
                 "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\DataAccess\\DataAccess.csproj"
               },
+              "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Dtos\\Dtos.csproj": {
+                "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Dtos\\Dtos.csproj"
+              },
               "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj": {
                 "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj"
               }
@@ -51,6 +54,10 @@
         "netstandard2.0": {
           "targetAlias": "netstandard2.0",
           "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[10.1.1, )"
+            },
             "Autofac": {
               "target": "Package",
               "version": "[6.0.0, )"
@@ -60,6 +67,10 @@
               "target": "Package",
               "version": "[2.0.3, )",
               "autoReferenced": true
+            },
+            "PemUtils": {
+              "target": "Package",
+              "version": "[3.0.0.82, )"
             }
           },
           "imports": [
@@ -149,6 +160,71 @@
         }
       }
     },
+    "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Dtos\\Dtos.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Dtos\\Dtos.csproj",
+        "projectName": "Dtos",
+        "projectPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Dtos\\Dtos.csproj",
+        "packagesPath": "C:\\Users\\Катя\\.nuget\\packages\\",
+        "outputPath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Dtos\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Microsoft\\Xamarin\\NuGet\\"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Катя\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://www.nuget.org/api/v2/": {}
+        },
+        "frameworks": {
+          "netstandard2.0": {
+            "targetAlias": "netstandard2.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.0": {
+          "targetAlias": "netstandard2.0",
+          "dependencies": {
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.3, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.100\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
     "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\Exceptions\\Exceptions.csproj": {
       "version": "1.0.0",
       "restore": {
@@ -194,6 +270,10 @@
               "target": "Package",
               "version": "[2.0.3, )",
               "autoReferenced": true
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[12.0.3, )"
             }
           },
           "imports": [
