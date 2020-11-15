@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Dtos.Attributes;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace Dtos

@@ -26,6 +26,7 @@ namespace BusinessLogic
             builder.RegisterType<AuthService>().As<IAuthService>().SingleInstance();
             builder.RegisterType<RSAService>().As<IAsymmetricEncryptionService>().SingleInstance();
             builder.RegisterType<SHA256HashingService>().As<IHashingService>().SingleInstance();
+            builder.RegisterType<SessionService>().As<ISessionService>().SingleInstance();
 
             return builder.Build();
         }

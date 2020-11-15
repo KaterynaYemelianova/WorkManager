@@ -24,13 +24,17 @@ namespace BusinessLogic.Services
 
         private static Regex PasswordPattern = new Regex("^[A-Za-z0-9]{8,32}$");
 
-        public async Task<AccountModel> Create(SignUpDto signUpDto)
+        public async Task<AccountModel> SignUp(SignUpDto signUpDto)
         {
             if (await AccountRepo.GetByLogin(signUpDto.Login) != null)
                 throw new LoginDuplicationException();
 
             PublicKeyModel key = DtoModelMapper.Mapper.Map<PublicKeyModel>(signUpDto.PublicKey);
-            string password = EncryptionService.Decrypt(signUpDto.PasswordEncrypted, key);
+
+            string password = null;
+
+            try { password = EncryptionService.Decrypt(signUpDto.PasswordEncrypted, key); }
+            catch(KeyNotFoundException ex) { throw new InvalidKeyException(); }
 
             EncryptionService.DestroyKeyPair(key);
 
@@ -48,9 +52,9 @@ namespace BusinessLogic.Services
             return EntityModelMapper.Mapper.Map<AccountModel>(inserted);
         }
 
-        public async Task<IEnumerable<AccountModel>> GetAccounts()
+        public Task<SessionModel> LogIn(LogInDto logInDto)
         {
-            throw new System.NotImplementedException();
+            return null;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Autofac;
 
 using BusinessLogic;
-using BusinessLogic.Models;
 using BusinessLogic.ServiceContracts;
 
 using Dtos;
@@ -16,11 +15,21 @@ namespace BackEnd.Controllers
     {
         private static IAuthService AuthService = BusinessLogicDependencyHolder.Dependencies.Resolve<IAuthService>();
 
+        [HttpPost]
         public async Task<HttpResponseMessage> SignUp([FromBody] SignUpDto signUpDto)
         {
             return await Execute(
-                dto => AuthService.Create(dto),
+                dto => AuthService.SignUp(dto),
                 signUpDto
+            );
+        }
+
+        [HttpPost]
+        public async Task<HttpResponseMessage> LogIn(LogInDto logInDto)
+        {
+            return await Execute(
+                dto => AuthService.LogIn(dto),
+                logInDto
             );
         }
     }
