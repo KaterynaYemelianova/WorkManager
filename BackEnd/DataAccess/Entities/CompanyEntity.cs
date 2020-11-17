@@ -11,11 +11,9 @@ namespace DataAccess.Entities
         public string ExtraData { get; set; }
 
         [Ignore]
-        [FValue(typeof(AccountCompanyRoleEntity))]
         public IDictionary<AccountEntity, RoleEntity> Members { get; set; }
 
         [Ignore]
-
         public IEnumerable<RoomEntity> Rooms { get; set; }
     }
 }

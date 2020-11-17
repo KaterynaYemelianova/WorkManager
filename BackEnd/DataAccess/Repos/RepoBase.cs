@@ -159,7 +159,7 @@ namespace DataAccess.Repos
 
         #region Protected
 
-        /*protected abstract Task<TEntity> LoadDependencies(TEntity entity);
+        protected abstract Task<TEntity> LoadDependencies(TEntity entity);
         protected async Task<IEnumerable<TEntity>> LoadDependencies(IEnumerable<TEntity> entities)
         {
             //millions of queries
@@ -167,7 +167,7 @@ namespace DataAccess.Repos
             foreach (TEntity entity in entities)
                 entitiesList.Add(await LoadDependencies(entity));
             return entitiesList;
-        }*/
+        }
 
         /// <summary>
         /// override it to insert dependent entities
@@ -264,11 +264,6 @@ namespace DataAccess.Repos
         private static string GetLimitString(int limit)
         {
             return limit > 0 ? $" TOP {limit}" : "";
-        }
-
-        private static IEnumerable<string> GetSelectParameters()
-        {
-            Properties typeof(TEntity).GetProperties()
         }
         #endregion
 

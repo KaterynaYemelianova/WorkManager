@@ -56,9 +56,7 @@ namespace DataAccess.Repos
             }
 
             foreach(RoomEntity room in entity.Rooms)
-            {
-
-            }
+                await RoomRepo.Insert(room);
 
             return id;
         }
