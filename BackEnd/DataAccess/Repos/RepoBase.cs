@@ -21,24 +21,26 @@ namespace DataAccess.Repos
     {
         #region Fields
 
-        private Regex UpperLetterPattern = new Regex("[A-Z]+");
+        private static Regex UpperLetterPattern = new Regex("[A-Z]+");
 
         #endregion
 
         #region Properties
 
+        public bool Lazy { get; set; } 
+
         protected abstract string ConnectionString { get; }
 
-        protected string TableName { get; set; }
+        protected static string TableName { get; set; }
 
-        protected string KeyColumnName { get; set; }
-        protected PropertyInfo KeyProperty { get; set; }
+        protected static string KeyColumnName { get; set; }
+        protected static PropertyInfo KeyProperty { get; set; }
 
-        protected IEnumerable<string> Columns { get; set; }
-        protected IEnumerable<PropertyInfo> Properties { get; set; }
+        protected static IEnumerable<string> Columns { get; set; }
+        protected static IEnumerable<PropertyInfo> Properties { get; set; }
 
-        protected IEnumerable<string> ColumnsExceptKey { get; set; }
-        protected IEnumerable<PropertyInfo> PropertiesExceptKey { get; set; }
+        protected static IEnumerable<string> ColumnsExceptKey { get; set; }
+        protected static IEnumerable<PropertyInfo> PropertiesExceptKey { get; set; }
 
         #endregion
 
@@ -54,22 +56,22 @@ namespace DataAccess.Repos
         #region Methods
         #region Public
 
-        public virtual async Task<IEnumerable<TEntity>> Get(int limit)
+        public async Task<IEnumerable<TEntity>> Get(int limit)
         {
             return await GetLimited(limit);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> Get()
+        public async Task<IEnumerable<TEntity>> Get()
         {
             return await GetLimited(-1);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value, int limit)
+        public async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value, int limit)
         {
             return await GetLimited(expression, value, limit);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value)
+        public async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value)
         {
             return await GetLimited(expression, value, -1);
         }
@@ -79,18 +81,21 @@ namespace DataAccess.Repos
             return await FirstOrDefault(entity => entity.Id, id);
         }
 
-        public virtual async Task<TEntity> FirstOrDefault(Expression<Func<TEntity, object>> expression, object value)
+        public async Task<TEntity> FirstOrDefault(Expression<Func<TEntity, object>> expression, object value)
         {
             IEnumerable<TEntity> list = await GetLimited(expression, value, 1);
             return list.FirstOrDefault();
         }
 
-        public virtual async Task<TEntity> Insert(TEntity entity)
+        public async Task<TEntity> Insert(TEntity entity)
         {
             int id = await InsertEntity(entity);
             return await FirstOrDefault(e => e.Id, id);
         }
 
+        /// <summary>
+        /// override it to update dependent entities
+        /// </summary>
         public virtual async Task<TEntity> Update(TEntity entity)
         {
             int id = (int)KeyProperty.GetValue(entity);
@@ -133,6 +138,9 @@ namespace DataAccess.Repos
             return await FirstOrDefault(updated => updated.Id, id);
         }
 
+        /// <summary>
+        /// override it to delete dependent entities
+        /// </summary>
         public virtual async Task Delete(int id)
         {
             string deleteText = $"DELETE FROM {TableName}\n" +
@@ -151,6 +159,19 @@ namespace DataAccess.Repos
 
         #region Protected
 
+        /*protected abstract Task<TEntity> LoadDependencies(TEntity entity);
+        protected async Task<IEnumerable<TEntity>> LoadDependencies(IEnumerable<TEntity> entities)
+        {
+            //millions of queries
+            List<TEntity> entitiesList = new List<TEntity>();
+            foreach (TEntity entity in entities)
+                entitiesList.Add(await LoadDependencies(entity));
+            return entitiesList;
+        }*/
+
+        /// <summary>
+        /// override it to insert dependent entities
+        /// </summary>
         protected virtual async Task<int> InsertEntity(TEntity entity)
         {
             string columns = string.Join(",", ColumnsExceptKey.Select(column => $"\"{column}\""));
@@ -177,7 +198,8 @@ namespace DataAccess.Repos
 
         #region Private
 
-        private void InitMetaData()
+        #region Static
+        private static void InitMetaData()
         {
             Properties = typeof(TEntity).GetProperties().Where(property => property.GetCustomAttribute<IgnoreAttribute>() == null);
             Columns = Properties.Select(property => GetColumnByProperty(property)).ToList();
@@ -191,26 +213,26 @@ namespace DataAccess.Repos
             TableName = typeof(TEntity).GetCustomAttribute<TableAttribute>()?.Name ?? ParseDefaultTableName();
         }
 
-        private string ParseDefaultName(string name)
+        private static string ParseDefaultName(string name)
         {
             return UpperLetterPattern.Replace(name, "_$0").ToLower().Trim('_');
         }
 
-        private string ParseDefaultTableName()
+        private static string ParseDefaultTableName()
         {
             return ParseDefaultName(
                 typeof(TEntity).Name.Replace("Entity", "")
             );
         }
 
-        private PropertyInfo GetKeyProperty()
+        private static PropertyInfo GetKeyProperty()
         {
             return Properties.FirstOrDefault(property => property.GetCustomAttribute<KeyAttribute>() != null) ??
                    Properties.FirstOrDefault(property => property.Name.ToLower() == "id") ?? 
                    throw new InvalidOperationException("No key property found");
         }
 
-        private IDictionary<string, object> GetParametersValues(IEnumerable<string> columns, TEntity entity)
+        private static IDictionary<string, object> GetParametersValues(IEnumerable<string> columns, TEntity entity)
         {
             return columns.ToDictionary(
                 column => $"@{column}",
@@ -218,12 +240,12 @@ namespace DataAccess.Repos
             );
         }
 
-        private string ParseDefaultPropertyNameToColumnName(PropertyInfo property)
+        private static string ParseDefaultPropertyNameToColumnName(PropertyInfo property)
         {
             return ParseDefaultName(property.Name);
         }
 
-        private string GetColumnByProperty(PropertyInfo property)
+        private static string GetColumnByProperty(PropertyInfo property)
         {
             if (property == null)
                 return null;
@@ -232,12 +254,23 @@ namespace DataAccess.Repos
                    ParseDefaultPropertyNameToColumnName(property);
         }
 
-        private PropertyInfo GetPropertyByColumn(string column)
+        private static PropertyInfo GetPropertyByColumn(string column)
         {
             return Properties.FirstOrDefault(property => property.GetCustomAttribute<ColumnAttribute>()?.Name == column) ??
                    Properties.FirstOrDefault(property => ParseDefaultPropertyNameToColumnName(property) == column) ??
                    throw new InvalidOperationException("No property for column found");
         }
+
+        private static string GetLimitString(int limit)
+        {
+            return limit > 0 ? $" TOP {limit}" : "";
+        }
+
+        private static IEnumerable<string> GetSelectParameters()
+        {
+            Properties typeof(TEntity).GetProperties()
+        }
+        #endregion
 
         private TEntity Fetch(SqlDataReader reader)
         {
@@ -286,11 +319,6 @@ namespace DataAccess.Repos
             return GetColumnByProperty(memberExpression.Member as PropertyInfo);
         }
 
-        private string GetLimitString(int limit)
-        {
-            return limit > 0 ? $" TOP {limit}" : "";
-        }
-
         private async Task<IEnumerable<TEntity>> GetLimited(Expression<Func<TEntity, object>> expression, object value, int limit)
         {
             string column = GetColumnByExpression(expression);
@@ -301,8 +329,7 @@ namespace DataAccess.Repos
             {
                 selector.Parameters.AddWithValue("@value", value);
                 connection.Open();
-                using (SqlDataReader reader = await selector.ExecuteReaderAsync())
-                    return await FetchList(reader);
+                return await GetQueryResult(selector);
             }
         }
 
@@ -313,8 +340,18 @@ namespace DataAccess.Repos
             using (SqlCommand selector = new SqlCommand(selectText, connection))
             {
                 connection.Open();
-                using (SqlDataReader reader = await selector.ExecuteReaderAsync())
-                    return await FetchList(reader);
+                return await GetQueryResult(selector);
+            }
+        }
+
+        private async Task<IEnumerable<TEntity>> GetQueryResult(SqlCommand command)
+        {
+            using (SqlDataReader reader = await command.ExecuteReaderAsync())
+            {
+                IEnumerable<TEntity> entities = await FetchList(reader);
+                if (Lazy)
+                    return entities;
+                return await LoadDependencies(entities);
             }
         }
 

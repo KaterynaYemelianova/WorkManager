@@ -1,8 +1,11 @@
 ﻿using DataAccess.Entities;
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace DataAccess.Repos
 {
-    internal class ConnectedRepoBase<TEntity> : RepoBase<TEntity> where TEntity : EntityBase, new()
+    internal abstract class ConnectedRepoBase<TEntity> : RepoBase<TEntity> where TEntity : EntityBase, new()
     {
         protected override string ConnectionString => 
             "workstation id=workmanagerdb.mssql.somee.com;" +

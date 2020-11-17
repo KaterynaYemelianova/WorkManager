@@ -42,14 +42,14 @@ namespace BusinessLogic.Services
             string password = null;
 
             try { password = EncryptionService.Decrypt(signUpDto.PasswordEncrypted, key); }
-            catch(KeyNotFoundException ex) { throw new InvalidKeyException(); }
+            catch(KeyNotFoundException) { throw new InvalidKeyException(); }
 
             EncryptionService.DestroyKeyPair(key);
 
             if (!PasswordPattern.IsMatch(password))
                 throw new InvalidPasswordException();
 
-            string passwordHash = HashingService.GetHashUTF8(password);
+            string passwordHash = HashingService.GetHashHex(password);
 
             AccountModel account = DtoModelMapper.Mapper.Map<AccountModel>(signUpDto);
             account.PasswordHash = passwordHash;
@@ -68,9 +68,9 @@ namespace BusinessLogic.Services
                 throw new AccountNotFoundException();
 
             string saltedPassword = account.Password + logInDto.Salt;
-            string saltedPasswordHash = HashingService.GetHashUTF8(saltedPassword);
+            string saltedPasswordHash = HashingService.GetHashHex(saltedPassword);
 
-            if (logInDto.PasswordSalted != saltedPasswordHash)
+            if (logInDto.PasswordSalted.ToUpper() != saltedPasswordHash.ToUpper())
                 throw new WrongPasswordException();
 
             return SessionService.CreateSessionFor(account.Id);

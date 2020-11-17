@@ -4,7 +4,7 @@ namespace BusinessLogic.ServiceContracts
 {
     internal interface IHashingService
     {
-        string GetHashUTF8(string text);
-        string GetHash(string text, Encoding encoding);
+        string GetHashHex(string text, Encoding encoding = null);
+        string GetHashBase64(string text, Encoding encoding = null);
     }
 }

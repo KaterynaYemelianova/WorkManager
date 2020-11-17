@@ -1,6 +1,6 @@
 ﻿using DataAccess.Entities;
 using DataAccess.RepoContracts;
-
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DataAccess.Repos
@@ -10,6 +10,11 @@ namespace DataAccess.Repos
         public async Task<AccountEntity> GetByLogin(string login)
         {
             return await FirstOrDefault(account => account.Login, login);
+        }
+
+        protected override async Task<AccountEntity> LoadDependencies(AccountEntity entity) 
+        {
+            return entity;
         }
     }
 }

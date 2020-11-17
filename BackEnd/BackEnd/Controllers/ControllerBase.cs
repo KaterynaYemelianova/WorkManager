@@ -36,6 +36,7 @@ namespace BackEnd.Controllers
             { typeof(SessionExpiredException), HttpStatusCode.Unauthorized },
             { typeof(AccountNotFoundException), HttpStatusCode.NotFound },
             { typeof(WrongPasswordException), HttpStatusCode.Unauthorized },
+            { typeof(NotAppropriateRoleException), HttpStatusCode.Forbidden }
         };
 
         public async Task<HttpResponseMessage> Execute(Action<object> executor, object parameter)

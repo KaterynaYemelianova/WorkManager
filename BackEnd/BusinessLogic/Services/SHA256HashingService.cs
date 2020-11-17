@@ -10,21 +10,34 @@ namespace BusinessLogic.Services
     {
         private SHA256 SHA256 = SHA256.Create();
 
-        public string GetHash(string text, Encoding encoding)
+        public string GetHashBase64(string text, Encoding encoding = null)
         {
             if (string.IsNullOrEmpty(text))
                 return null;
 
-            Encoding usedEncoding = encoding ?? Encoding.UTF8;
-            byte[] bytes = usedEncoding.GetBytes(text);
-            byte[] hash = SHA256.ComputeHash(bytes);
+            byte[] hash = GetHash(text, encoding);
 
             return Convert.ToBase64String(hash);
         }
 
-        public string GetHashUTF8(string text)
+        public string GetHashHex(string text, Encoding encoding = null)
         {
-            return GetHash(text, Encoding.UTF8);
+            if (string.IsNullOrEmpty(text))
+                return null;
+
+            byte[] hash = GetHash(text, encoding);
+
+            return BitConverter.ToString(hash).Replace("-", "").ToUpper();
+        }
+
+        private byte[] GetHash(string text, Encoding encoding = null)
+        {
+            Encoding usedEncoding = encoding ?? Encoding.UTF8;
+
+            byte[] bytes = usedEncoding.GetBytes(text);
+            byte[] hash = SHA256.ComputeHash(bytes);
+
+            return hash;
         }
     }
 }

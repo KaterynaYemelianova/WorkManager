@@ -22,7 +22,7 @@ namespace BusinessLogic.Services
         private string GenerateToken()
         {
             string seed = Guid.NewGuid().ToString();
-            return Hasher.GetHashUTF8(seed);
+            return Hasher.GetHashHex(seed);
         }
 
         public SessionModel CreateSessionFor(int accountId)
@@ -51,7 +51,7 @@ namespace BusinessLogic.Services
 
             SessionModel session = Sessions[userId];
 
-            string originalTokenSalted = Hasher.GetHashUTF8(session.Token + sessionDto.Salt);
+            string originalTokenSalted = Hasher.GetHashHex(session.Token + sessionDto.Salt);
             if (originalTokenSalted.ToUpper() != sessionDto.SessionTokenSalted.ToUpper())
                 throw new WrongSessionTokenException();
 
