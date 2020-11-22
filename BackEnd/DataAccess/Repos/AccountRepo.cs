@@ -12,9 +12,9 @@ namespace DataAccess.Repos
             return await FirstOrDefault(account => account.Login, login);
         }
 
-        protected override async Task<AccountEntity> LoadDependencies(AccountEntity entity) 
+        protected override async Task<IEnumerable<AccountEntity>> LoadDependencies(IEnumerable<AccountEntity> entities)
         {
-            return entity;
+            return entities;
         }
     }
 }

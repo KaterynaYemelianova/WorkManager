@@ -13,7 +13,7 @@ using DataAccess.Entities;
 using DataAccess.RepoContracts;
 
 using Exceptions.DataAccess;
-
+using Autofac;
 
 namespace DataAccess.Repos
 {
@@ -56,24 +56,33 @@ namespace DataAccess.Repos
         #region Methods
         #region Public
 
-        public async Task<IEnumerable<TEntity>> Get(int limit)
-        {
-            return await GetLimited(limit);
-        }
-
         public async Task<IEnumerable<TEntity>> Get()
         {
-            return await GetLimited(-1);
+            return await GetQuery(-1);
         }
 
-        public async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value, int limit)
+        public async Task<IEnumerable<TEntity>> Get(int limit)
         {
-            return await GetLimited(expression, value, limit);
+            return await GetQuery(limit);
         }
 
-        public async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, object>> expression, object value)
+        public async Task<IDictionary<T, List<TEntity>>> Get<T>(Expression<Func<TEntity, T>> expression, params T[] values)
         {
-            return await GetLimited(expression, value, -1);
+            return await Get(expression, -1, values);
+        }
+
+        public async Task<IDictionary<T, List<TEntity>>> Get<T>(Expression<Func<TEntity, T>> expression, int limit, params T[] values)
+        {
+            IEnumerable<TEntity> entities = await GetQuery(expression, limit, values);
+            return entities.GroupBy(expression.Compile()).ToDictionary(
+                group => group.Key,
+                group => group.ToList()
+            );
+        }
+
+        public async Task<IEnumerable<TEntity>> Get<T>(IDictionary<Expression<Func<TEntity, T>>, T> where)
+        {
+            return await GetQuery(where);
         }
 
         public async Task<TEntity> GetById(int id)
@@ -81,9 +90,23 @@ namespace DataAccess.Repos
             return await FirstOrDefault(entity => entity.Id, id);
         }
 
-        public async Task<TEntity> FirstOrDefault(Expression<Func<TEntity, object>> expression, object value)
+        public async Task<IEnumerable<TEntity>> GetByIds(params int[] ids)
         {
-            IEnumerable<TEntity> list = await GetLimited(expression, value, 1);
+            return await GetQuery(entity => entity.Id, -1, ids);
+        }
+
+        public async Task<IDictionary<int, TEntity>> GetDictionaryByIds(params int[] ids)
+        {
+            IEnumerable<TEntity> entities = await GetByIds(ids);
+            return entities.ToDictionary(
+                entity => entity.Id,
+                entity => entity
+            );
+        }
+
+        public async Task<TEntity> FirstOrDefault<T>(Expression<Func<TEntity, T>> expression, T value)
+        {
+            IEnumerable<TEntity> list = await GetQuery(expression, 1, value);
             return list.FirstOrDefault();
         }
 
@@ -141,33 +164,26 @@ namespace DataAccess.Repos
         /// <summary>
         /// override it to delete dependent entities
         /// </summary>
-        public virtual async Task Delete(int id)
+        public virtual async Task Delete(params int[] ids)
         {
-            string deleteText = $"DELETE FROM {TableName}\n" +
-                                $"WHERE {KeyColumnName} = @id;";
+            await Delete(entity => entity.Id, ids);
+        }
 
-            using (SqlConnection connection = new SqlConnection(ConnectionString))
-            using (SqlCommand deleter = new SqlCommand(deleteText, connection))
-            {
-                deleter.Parameters.AddWithValue("@id", id);
-                connection.Open();
-                await deleter.ExecuteNonQueryAsync();
-            }
+        public async Task Delete<T>(Expression<Func<TEntity, T>> expression, params T[] values)
+        {
+            await DeleteQuery(expression, values);
+        }
+
+        public async Task Delete<T>(IDictionary<Expression<Func<TEntity, T>>, T> wheres)
+        {
+            await DeleteQuery(wheres);   
         }
 
         #endregion
 
         #region Protected
 
-        protected abstract Task<TEntity> LoadDependencies(TEntity entity);
-        protected async Task<IEnumerable<TEntity>> LoadDependencies(IEnumerable<TEntity> entities)
-        {
-            //millions of queries
-            List<TEntity> entitiesList = new List<TEntity>();
-            foreach (TEntity entity in entities)
-                entitiesList.Add(await LoadDependencies(entity));
-            return entitiesList;
-        }
+        protected abstract Task<IEnumerable<TEntity>> LoadDependencies(IEnumerable<TEntity> entities);
 
         /// <summary>
         /// override it to insert dependent entities
@@ -192,6 +208,38 @@ namespace DataAccess.Repos
                 connection.Open();
                 return (int)await inserter.ExecuteScalarAsync();
             }
+        }
+
+        protected async Task<IEnumerable<T>> UpdateCollection<T>(IEnumerable<T> oldCollection, IEnumerable<T> newCollection) where T : EntityBase, new()
+        {
+            IRepo<T> collectionRepo = DataAccessDependencyHolder.Dependencies.Resolve<IRepo<T>>();
+
+            if (newCollection == null)
+                newCollection = new List<T>();
+
+            IEnumerable<T> toUpdate = oldCollection.Intersect(newCollection);
+            IEnumerable<T> toDelete = oldCollection.Except(newCollection);
+            IEnumerable<T> toInsert = newCollection.Except(oldCollection);
+
+            List<T> result = new List<T>();
+
+            foreach (T updating in toUpdate)
+            {
+                T updated = await collectionRepo.Update(updating);
+                result.Add(updated);
+            }
+
+            await collectionRepo.Delete(
+                toDelete.Select(deleting => deleting.Id).ToArray()
+            );
+
+            foreach(T inserting in toInsert)
+            {
+                T inserted = await collectionRepo.Insert(inserting);
+                result.Add(inserted);
+            }
+
+            return result;
         }
 
         #endregion
@@ -299,7 +347,7 @@ namespace DataAccess.Repos
             return entities;
         }
 
-        private string GetColumnByExpression(Expression<Func<TEntity, object>> expression)
+        private string GetColumnByExpression<T>(Expression<Func<TEntity, T>> expression)
         {
             MemberExpression memberExpression = null;
 
@@ -314,21 +362,57 @@ namespace DataAccess.Repos
             return GetColumnByProperty(memberExpression.Member as PropertyInfo);
         }
 
-        private async Task<IEnumerable<TEntity>> GetLimited(Expression<Func<TEntity, object>> expression, object value, int limit)
+        private async Task<IEnumerable<TEntity>> GetQuery<T>(IDictionary<Expression<Func<TEntity, T>>, T> wheres)
         {
-            string column = GetColumnByExpression(expression);
-            string selectText = $"SELECT {GetLimitString(limit)} * FROM {TableName} WHERE {column} = @value;";
+            if (wheres.Count == 0)
+                return await Get();
+
+            Dictionary<string, T> columnsWheres = wheres.ToDictionary(
+                where => GetColumnByExpression(where.Key),
+                where => where.Value
+            );
+
+            string whereLine = string.Join(
+                " AND ", 
+                columnsWheres.Select(
+                    columnWhere => $"{columnWhere.Key} = @{columnWhere.Key}"
+                )
+            );
+
+            string selectText = $"SELECT * FROM {TableName} WHERE {whereLine};";
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand selector = new SqlCommand(selectText, connection))
             {
-                selector.Parameters.AddWithValue("@value", value);
+                foreach(KeyValuePair<string, T> columnWhere in columnsWheres)
+                    selector.Parameters.AddWithValue($"@{columnWhere.Key}", columnWhere.Value);
+
                 connection.Open();
                 return await GetQueryResult(selector);
             }
         }
 
-        private async Task<IEnumerable<TEntity>> GetLimited(int limit)
+        private async Task<IEnumerable<TEntity>> GetQuery<T>(Expression<Func<TEntity, T>> expression, int limit, params T[] values)
+        {
+            if (values.Length == 0)
+                return new List<TEntity>();
+
+            string column = GetColumnByExpression(expression);
+            string valueParameters = string.Join(",", Enumerable.Range(1, values.Length).Select(i => $"@value{i}"));
+            string selectText = $"SELECT {GetLimitString(limit)} * FROM {TableName} WHERE {column} IN ({valueParameters});";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand selector = new SqlCommand(selectText, connection))
+            {
+                for(int i = 0; i < values.Length; i++)
+                    selector.Parameters.AddWithValue($"@value{i + 1}", values[i]);
+
+                connection.Open();
+                return await GetQueryResult(selector);
+            }
+        }
+
+        private async Task<IEnumerable<TEntity>> GetQuery(int limit)
         {
             string selectText = $"SELECT {GetLimitString(limit)} * FROM {TableName};";
             using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -344,9 +428,62 @@ namespace DataAccess.Repos
             using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
                 IEnumerable<TEntity> entities = await FetchList(reader);
+
                 if (Lazy)
                     return entities;
+
                 return await LoadDependencies(entities);
+            }
+        }
+
+        private async Task DeleteQuery<T>(Expression<Func<TEntity, T>> expression, params T[] values)
+        {
+            if (values.Length == 0)
+                return;
+
+            string column = GetColumnByExpression(expression);
+            string parametersValues = string.Join(",", Enumerable.Range(1, values.Length).Select(i => $"@value{i}"));
+            string deleteText = $"DELETE FROM {TableName}\n" +
+                                $"WHERE {column} IN ({parametersValues});";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand deleter = new SqlCommand(deleteText, connection))
+            {
+                for (int i = 0; i < values.Length; ++i)
+                    deleter.Parameters.AddWithValue($"@value{i + 1}", values[i]);
+
+                connection.Open();
+                await deleter.ExecuteNonQueryAsync();
+            }
+        }
+
+        private async Task DeleteQuery<T>(IDictionary<Expression<Func<TEntity, T>>, T> wheres)
+        {
+            if (wheres.Count == 0)
+                return;
+
+            Dictionary<string, T> columnsWheres = wheres.ToDictionary(
+                where => GetColumnByExpression(where.Key),
+                where => where.Value
+            );
+
+            string whereLine = string.Join(
+                " AND ",
+                columnsWheres.Select(
+                    columnWhere => $"{columnWhere.Key} = @{columnWhere.Key}"
+                )
+            );
+
+            string deleteText = $"DELETE FROM {TableName} WHERE {whereLine};";
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlCommand deleter = new SqlCommand(deleteText, connection))
+            {
+                foreach (KeyValuePair<string, T> columnWhere in columnsWheres)
+                    deleter.Parameters.AddWithValue($"@{columnWhere.Key}", columnWhere.Value);
+
+                connection.Open();
+                await deleter.ExecuteNonQueryAsync();
             }
         }
 
