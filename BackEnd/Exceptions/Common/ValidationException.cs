@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Exceptions.BackEnd
+namespace Exceptions.Common
 {
     public class ValidationException : ServerException
     {

@@ -48,48 +48,52 @@ namespace DataAccess.Repos
 
             foreach (CompanyEntity company in entities)
             {
-                company.Members = acrs[company.Id].ToDictionary(
-                    acrGroup => accounts[acrGroup.AccountId],
-                    acrGroup => roles[acrGroup.RoleId]
-                );
+                if (acrs.ContainsKey(company.Id))
+                {
+                    company.Members = acrs[company.Id].ToDictionary(
+                        acrGroup => accounts[acrGroup.AccountId],
+                        acrGroup => roles[acrGroup.RoleId]
+                    );
+                }
 
-                company.Rooms = rooms[company.Id];
+                if (rooms.ContainsKey(company.Id))
+                    company.Rooms = rooms[company.Id];
             }
 
             return entities;
-        }
-
-        protected override async Task<int> InsertEntity(CompanyEntity entity)
-        {
-            int id = await base.InsertEntity(entity);
-
-            foreach (KeyValuePair<AccountEntity, RoleEntity> accountRole in entity.Members)
-                await AccountCompanyRoleRepo.Insert(
-                    GetAccountCompanyRole(accountRole, entity.Id)
-                );
-
-            foreach(RoomEntity room in entity.Rooms)
-                await RoomRepo.Insert(room);
-
-            return id;
         }
 
         public override async Task<CompanyEntity> Update(CompanyEntity entity)
         {
             CompanyEntity updated = await base.Update(entity);
 
-            //TODO
-            //await UpdateCollection(updated.Members.Keys, entity.Members.Keys);
-        }
+            List<AccountCompanyRoleEntity> acrsOld = await AccountCompanyRoleRepo.GetByOne(
+                acr => acr.CompanyId, entity.Id
+            );
 
-        private AccountCompanyRoleEntity GetAccountCompanyRole(KeyValuePair<AccountEntity, RoleEntity> accountRole, int companyId)
-        {
-            return new AccountCompanyRoleEntity()
+            List<AccountCompanyRoleEntity> updatedAcrs = new List<AccountCompanyRoleEntity>();
+            foreach (KeyValuePair<AccountEntity, RoleEntity> acr in entity.Members)
             {
-                AccountId = accountRole.Key.Id,
-                RoleId = accountRole.Value.Id,
-                CompanyId = companyId
-            };
+                AccountCompanyRoleEntity foundAcrOld = acrsOld.FirstOrDefault(
+                    acrOld => acrOld.AccountId == acr.Key.Id
+                );
+
+                AccountCompanyRoleEntity newAcr = new AccountCompanyRoleEntity()
+                {
+                    AccountId = acr.Key.Id,
+                    RoleId = acr.Value.Id
+                };
+
+                if (foundAcrOld != null)
+                    newAcr.Id = foundAcrOld.Id;
+
+                updatedAcrs.Add(newAcr);
+            }
+
+            await UpdateCollection(acrsOld, updatedAcrs, acr => acr.CompanyId, updated);
+            await UpdateCollection(updated.Rooms, entity.Rooms, room => room.CompanyId, updated);
+
+            return await GetById(entity.Id);
         }
     }
 }

@@ -1,12 +1,7 @@
-﻿using System;
-
-namespace BusinessLogic.Models
+﻿namespace BusinessLogic.Models
 {
-    public enum RoleModel
+    public class RoleModel : ModelBase
     {
-        WORKER,
-        MANAGER,
-        DIRECTOR,
-        SUPERADMIN
+        public string Name { get; set; }
     }
 }

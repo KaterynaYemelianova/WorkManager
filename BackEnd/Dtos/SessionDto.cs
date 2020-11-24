@@ -2,7 +2,7 @@
 
 namespace Dtos
 {
-    public class SessionDto
+    public class SessionDto : IDto
     {
         [HeaderAutoWired("UID")]
         public int UserId { get; set; }

@@ -14,5 +14,8 @@ namespace BusinessLogic.Models
 
         [JsonProperty("members")]
         public IDictionary<AccountModel, RoleModel> Members { get; set; }
+
+        [JsonProperty("rooms")]
+        public IEnumerable<RoomModel> Rooms { get; set; }
     }
 }

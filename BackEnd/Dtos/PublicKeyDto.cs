@@ -2,7 +2,7 @@
 
 namespace Dtos
 {
-    public class PublicKeyDto
+    public class PublicKeyDto : IDto
     {
         [JsonProperty("modulus")]
         public string Modulus { get; set; }

@@ -5,6 +5,6 @@ namespace BusinessLogic.ServiceContracts
 {
     internal interface IRoleCheckService
     {
-        Task<bool> IsInRole(RoleModel role, int userId, int companyId, bool throwIfFailed = true);
+        Task<bool> IsInRole(RoleEnum role, int userId, int companyId, bool throwIfFailed = true);
     }
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dtos
 {
-    public class SignUpDto
+    public class SignUpDto : IDto
     {
         [Required(AllowEmptyStrings = false, ErrorMessage = "login is required")]
         [RegularExpression("[A-Za-z0-9]{6,32}", ErrorMessage = "login must consist of english letters or digits between 6 and 32 symbols")]

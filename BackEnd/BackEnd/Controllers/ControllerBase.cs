@@ -1,9 +1,9 @@
 ﻿using BackEnd.Output;
 
-using Dtos;
+using Dtos.Attributes;
 
 using Exceptions;
-using Exceptions.BackEnd;
+using Exceptions.Common;
 using Exceptions.DataAccess;
 using Exceptions.BusinessLogic;
 
@@ -18,7 +18,6 @@ using System.Web.Http.ModelBinding;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Linq;
-using Dtos.Attributes;
 
 namespace BackEnd.Controllers
 {
@@ -36,7 +35,8 @@ namespace BackEnd.Controllers
             { typeof(SessionExpiredException), HttpStatusCode.Unauthorized },
             { typeof(AccountNotFoundException), HttpStatusCode.NotFound },
             { typeof(WrongPasswordException), HttpStatusCode.Unauthorized },
-            { typeof(NotAppropriateRoleException), HttpStatusCode.Forbidden }
+            { typeof(NotAppropriateRoleException), HttpStatusCode.Forbidden },
+            { typeof(WrongEncryptionException), HttpStatusCode.BadRequest }
         };
 
         public async Task<HttpResponseMessage> Execute(Action<object> executor, object parameter)
@@ -124,18 +124,22 @@ namespace BackEnd.Controllers
                 return;
 
             PropertyInfo[] properties = obj.GetType().GetProperties()
-                .Where(property => property.GetCustomAttribute<HeaderAutoWired>() != null)
+                .Where(property => property.GetCustomAttribute<HeaderAutoWiredAttribute>() != null)
                 .ToArray();
 
             foreach (PropertyInfo property in properties)
             {
-                HeaderAutoWired attr = property.GetCustomAttribute<HeaderAutoWired>();
+                HeaderAutoWiredAttribute attr = property.GetCustomAttribute<HeaderAutoWiredAttribute>();
 
                 if (property.PropertyType.IsPrimitive || property.PropertyType.Equals(typeof(string)))
                 {
                     string header = GetHeaderOrCookie(attr.HeaderName, attr.ThrowIfNotPresented);
-                    object value = Convert.ChangeType(header, property.PropertyType);
-                    property.SetValue(obj, value);
+                    try
+                    {
+                        object value = Convert.ChangeType(header, property.PropertyType);
+                        property.SetValue(obj, value);
+                    }
+                    catch { throw new ValidationException($"Header {attr.HeaderName} is invalid"); }
                 }
                 else
                 {

@@ -13,6 +13,9 @@ using Exceptions.BusinessLogic;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System;
+using Exceptions.Common;
+using System.Security.Cryptography;
 
 namespace BusinessLogic.Services
 {
@@ -42,7 +45,9 @@ namespace BusinessLogic.Services
             string password = null;
 
             try { password = EncryptionService.Decrypt(signUpDto.PasswordEncrypted, key); }
-            catch(KeyNotFoundException) { throw new InvalidKeyException(); }
+            catch(KeyNotFoundException) { throw new InvalidKeyException(); } 
+            catch(FormatException) { throw new ValidationException("Password format was not match Base64"); }
+            catch(CryptographicException) { throw new WrongEncryptionException("Password"); }
 
             EncryptionService.DestroyKeyPair(key);
 

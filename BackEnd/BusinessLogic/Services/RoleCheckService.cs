@@ -17,7 +17,7 @@ namespace BusinessLogic.ServiceContracts
     {
         private static ICompanyRepo CompanyRepo = DataAccessDependencyHolder.Dependencies.Resolve<ICompanyRepo>();
 
-        public async Task<bool> IsInRole(RoleModel role, int userId, int companyId, bool throwIfFailed = true)
+        public async Task<bool> IsInRole(RoleEnum role, int userId, int companyId, bool throwIfFailed = true)
         {
             CompanyEntity companyEntity = await CompanyRepo.GetById(companyId);
 
@@ -31,7 +31,7 @@ namespace BusinessLogic.ServiceContracts
             if (accountRole.Key == null || accountRole.Value == null)
                 return false;
 
-            RoleModel roleModel = (RoleModel)(accountRole.Value.Id - 1);
+            RoleEnum roleModel = (RoleEnum)(accountRole.Value.Id - 1);
 
             if (roleModel != role && throwIfFailed)
                 throw new NotAppropriateRoleException(role.ToString());

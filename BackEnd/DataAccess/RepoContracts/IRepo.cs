@@ -12,6 +12,8 @@ namespace DataAccess.RepoContracts
     {
         Task<IEnumerable<TEntity>> Get();
         Task<IEnumerable<TEntity>> Get(int limit);
+        Task<List<TEntity>> GetByOne<T>(Expression<Func<TEntity, T>> expression, int limit, T value);
+        Task<List<TEntity>> GetByOne<T>(Expression<Func<TEntity, T>> expression, T value);
         Task<IDictionary<T, List<TEntity>>> Get<T>(Expression<Func<TEntity, T>> expression, int limit, params T[] value);
         Task<IDictionary<T, List<TEntity>>> Get<T>(Expression<Func<TEntity, T>> expression, params T[] values);
         Task<IEnumerable<TEntity>> Get<T>(IDictionary<Expression<Func<TEntity, T>>, T> wheres);

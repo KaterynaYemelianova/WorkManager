@@ -85,6 +85,18 @@ namespace DataAccess.Repos
             return await GetQuery(where);
         }
 
+        public async Task<List<TEntity>> GetByOne<T>(Expression<Func<TEntity, T>> expression, int limit, T value)
+        {
+            IDictionary<T, List<TEntity>> entities = await Get(expression, limit, value);
+            return entities.FirstOrDefault().Value ?? new List<TEntity>();
+        }
+
+        public async Task<List<TEntity>> GetByOne<T>(Expression<Func<TEntity, T>> expression, T value)
+        {
+            IDictionary<T, List<TEntity>> entities = await Get(expression, value);
+            return entities.FirstOrDefault().Value ?? new List<TEntity>();
+        }
+
         public async Task<TEntity> GetById(int id)
         {
             return await FirstOrDefault(entity => entity.Id, id);
@@ -112,8 +124,8 @@ namespace DataAccess.Repos
 
         public async Task<TEntity> Insert(TEntity entity)
         {
-            int id = await InsertEntity(entity);
-            return await FirstOrDefault(e => e.Id, id);
+            entity.Id = await InsertEntity(entity);
+            return await Update(entity);
         }
 
         /// <summary>
@@ -136,6 +148,9 @@ namespace DataAccess.Repos
                 if (storedValue.Equals(updatedValue))
                     continue;
 
+                if (string.IsNullOrEmpty(storedValue as string) && string.IsNullOrEmpty(updatedValue as string))
+                    continue;
+
                 changedColumns.Add(GetColumnByProperty(property), updatedValue);
             }
 
@@ -152,7 +167,7 @@ namespace DataAccess.Repos
             using (SqlCommand updater = new SqlCommand(updateText, connection))
             {
                 foreach (KeyValuePair<string, object> changedColumn in changedColumns)
-                    updater.Parameters.AddWithValue($"@{changedColumn.Key}", changedColumn.Value);
+                    AddParameter(updater, $"@{changedColumn.Key}", changedColumn.Value);
 
                 connection.Open();
                 await updater.ExecuteNonQueryAsync();
@@ -188,7 +203,7 @@ namespace DataAccess.Repos
         /// <summary>
         /// override it to insert dependent entities
         /// </summary>
-        protected virtual async Task<int> InsertEntity(TEntity entity)
+        private async Task<int> InsertEntity(TEntity entity)
         {
             string columns = string.Join(",", ColumnsExceptKey.Select(column => $"\"{column}\""));
 
@@ -203,19 +218,25 @@ namespace DataAccess.Repos
             using (SqlCommand inserter = new SqlCommand(insertText, connection))
             {
                 foreach (KeyValuePair<string, object> parameterValue in parametersValues)
-                    inserter.Parameters.AddWithValue(parameterValue.Key, parameterValue.Value);
+                    AddParameter(inserter, parameterValue.Key, parameterValue.Value);
 
                 connection.Open();
                 return (int)await inserter.ExecuteScalarAsync();
             }
         }
 
-        protected async Task<IEnumerable<T>> UpdateCollection<T>(IEnumerable<T> oldCollection, IEnumerable<T> newCollection) where T : EntityBase, new()
+        protected async Task<IEnumerable<T>> UpdateCollection<T>(
+            IEnumerable<T> oldCollection, IEnumerable<T> newCollection, 
+            Expression<Func<T, int>> foreignKey, TEntity parent
+        ) where T : EntityBase, new()
         {
-            IRepo<T> collectionRepo = DataAccessDependencyHolder.Dependencies.Resolve<IRepo<T>>();
+            RepoBase<T> collectionRepo = DataAccessDependencyHolder.Dependencies.Resolve<IRepo<T>>() as RepoBase<T>;
 
             if (newCollection == null)
                 newCollection = new List<T>();
+
+            if (oldCollection == null)
+                oldCollection = new List<T>();
 
             IEnumerable<T> toUpdate = oldCollection.Intersect(newCollection);
             IEnumerable<T> toDelete = oldCollection.Except(newCollection);
@@ -233,8 +254,11 @@ namespace DataAccess.Repos
                 toDelete.Select(deleting => deleting.Id).ToArray()
             );
 
+            PropertyInfo foreignKeyProperty = collectionRepo.GetPropertyByExpression(foreignKey);
+
             foreach(T inserting in toInsert)
             {
+                foreignKeyProperty.SetValue(inserting, parent.Id);
                 T inserted = await collectionRepo.Insert(inserting);
                 result.Add(inserted);
             }
@@ -347,7 +371,7 @@ namespace DataAccess.Repos
             return entities;
         }
 
-        private string GetColumnByExpression<T>(Expression<Func<TEntity, T>> expression)
+        private PropertyInfo GetPropertyByExpression<T>(Expression<Func<TEntity, T>> expression)
         {
             MemberExpression memberExpression = null;
 
@@ -359,7 +383,13 @@ namespace DataAccess.Repos
             if (memberExpression == null)
                 return null;
 
-            return GetColumnByProperty(memberExpression.Member as PropertyInfo);
+            return memberExpression.Member as PropertyInfo;
+        }
+
+        private string GetColumnByExpression<T>(Expression<Func<TEntity, T>> expression)
+        {
+            PropertyInfo property = GetPropertyByExpression(expression);
+            return GetColumnByProperty(property);
         }
 
         private async Task<IEnumerable<TEntity>> GetQuery<T>(IDictionary<Expression<Func<TEntity, T>>, T> wheres)
@@ -385,7 +415,7 @@ namespace DataAccess.Repos
             using (SqlCommand selector = new SqlCommand(selectText, connection))
             {
                 foreach(KeyValuePair<string, T> columnWhere in columnsWheres)
-                    selector.Parameters.AddWithValue($"@{columnWhere.Key}", columnWhere.Value);
+                    AddParameter(selector, $"@{columnWhere.Key}", columnWhere.Value);
 
                 connection.Open();
                 return await GetQueryResult(selector);
@@ -404,8 +434,8 @@ namespace DataAccess.Repos
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             using (SqlCommand selector = new SqlCommand(selectText, connection))
             {
-                for(int i = 0; i < values.Length; i++)
-                    selector.Parameters.AddWithValue($"@value{i + 1}", values[i]);
+                for (int i = 0; i < values.Length; i++)
+                    AddParameter(selector, $"@value{i + 1}", values[i]);
 
                 connection.Open();
                 return await GetQueryResult(selector);
@@ -450,7 +480,7 @@ namespace DataAccess.Repos
             using (SqlCommand deleter = new SqlCommand(deleteText, connection))
             {
                 for (int i = 0; i < values.Length; ++i)
-                    deleter.Parameters.AddWithValue($"@value{i + 1}", values[i]);
+                    AddParameter(deleter, $"@value{i + 1}", values[i]);
 
                 connection.Open();
                 await deleter.ExecuteNonQueryAsync();
@@ -480,11 +510,19 @@ namespace DataAccess.Repos
             using (SqlCommand deleter = new SqlCommand(deleteText, connection))
             {
                 foreach (KeyValuePair<string, T> columnWhere in columnsWheres)
-                    deleter.Parameters.AddWithValue($"@{columnWhere.Key}", columnWhere.Value);
+                    AddParameter(deleter, $"@{columnWhere.Key}", columnWhere.Value);
 
                 connection.Open();
                 await deleter.ExecuteNonQueryAsync();
             }
+        }
+
+        private void AddParameter<T>(SqlCommand command, string name, T value)
+        {
+            if (value == null)
+                command.Parameters.AddWithValue(name, DBNull.Value);
+            else
+                command.Parameters.AddWithValue(name, value);
         }
 
         #endregion

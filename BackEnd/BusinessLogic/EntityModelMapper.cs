@@ -24,6 +24,13 @@ namespace BusinessLogic
                   .ForMember(ent => ent.Password, cnf => cnf.MapFrom(model => model.PasswordHash))
                   .ReverseMap();
 
+            config.CreateMap<RoleModel, RoomEntity>().ReverseMap();
+
+            config.CreateMap<RoomModel, RoomEntity>()
+                  .ForMember(ent => ent.ExtraData, cnf => cnf.MapFrom(model => JsonConvert.SerializeObject(model.ExtraData)))
+                  .ReverseMap()
+                  .ForMember(model => model.ExtraData, cnf => cnf.MapFrom(ent => JsonConvert.DeserializeObject(ent.ExtraData)));
+
             config.CreateMap<CompanyModel, CompanyEntity>()
                   .ForMember(ent => ent.ExtraData, cnf => cnf.MapFrom(model => JsonConvert.SerializeObject(model.ExtraData)))
                   .ReverseMap()
