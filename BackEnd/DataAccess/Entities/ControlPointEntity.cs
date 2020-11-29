@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataAccess.Entities
+﻿namespace DataAccess.Entities
 {
-    public class ControlPointEntity : EntityBase
+    public class ControlPointEntity : PointBaseEntity
     {
+        public string ViolationCondition { get; set; }
+        public string ViolationApiUrl { get; set; }
+        public string NotifyViolatoinApiUrl { get; set; }
     }
 }

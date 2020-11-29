@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "GuUJIEMuTHcDu9z3OCYJiUeXansppH/ozv6/eQuUeDtNbOXQw5hR6FDysbqCzCB7RgVjiIqJ04Nf+Jr5gzjPzg==",
+  "dgSpecHash": "CblPKaREMDRLCLsrSMcb4iFlGZgwDay8zsCfn2/JTofxyJPdgoOqHxulnNFD++1sFhOWTDrb2GjwriZ4hLn/AQ==",
   "success": true,
   "projectFilePath": "D:\\!!!Katia\\NURE\\АРК\\Course\\WorkManager\\BackEnd\\BusinessLogic\\BusinessLogic.csproj",
   "expectedPackageFiles": [
@@ -14,6 +14,7 @@
     "C:\\Users\\Катя\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
     "C:\\Users\\Катя\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512",
     "C:\\Users\\Катя\\.nuget\\packages\\pemutils\\3.0.0.82\\pemutils.3.0.0.82.nupkg.sha512",
+    "C:\\Users\\Катя\\.nuget\\packages\\restsharp\\106.11.7\\restsharp.106.11.7.nupkg.sha512",
     "C:\\Users\\Катя\\.nuget\\packages\\runtime.native.system.data.sqlclient.sni\\4.7.0\\runtime.native.system.data.sqlclient.sni.4.7.0.nupkg.sha512",
     "C:\\Users\\Катя\\.nuget\\packages\\runtime.win-arm64.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-arm64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",
     "C:\\Users\\Катя\\.nuget\\packages\\runtime.win-x64.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-x64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",

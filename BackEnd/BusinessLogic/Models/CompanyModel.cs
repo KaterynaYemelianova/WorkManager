@@ -13,7 +13,7 @@ namespace BusinessLogic.Models
         public object ExtraData { get; set; }
 
         [JsonProperty("members")]
-        public IDictionary<AccountModel, RoleModel> Members { get; set; }
+        public IEnumerable<AccountRoleModel> Members { get; set; }
 
         [JsonProperty("rooms")]
         public IEnumerable<RoomModel> Rooms { get; set; }

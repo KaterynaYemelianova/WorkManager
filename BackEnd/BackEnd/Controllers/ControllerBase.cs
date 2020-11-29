@@ -18,6 +18,8 @@ using System.Web.Http.ModelBinding;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Linq;
+using System.Web.Http.Controllers;
+using Dtos;
 
 namespace BackEnd.Controllers
 {
@@ -36,10 +38,12 @@ namespace BackEnd.Controllers
             { typeof(AccountNotFoundException), HttpStatusCode.NotFound },
             { typeof(WrongPasswordException), HttpStatusCode.Unauthorized },
             { typeof(NotAppropriateRoleException), HttpStatusCode.Forbidden },
-            { typeof(WrongEncryptionException), HttpStatusCode.BadRequest }
+            { typeof(WrongEncryptionException), HttpStatusCode.BadRequest },
+            { typeof(MembershipDuplicationException), HttpStatusCode.Conflict },
+            { typeof(MembershipNotFoundException), HttpStatusCode.NotFound }
         };
 
-        public async Task<HttpResponseMessage> Execute(Action<object> executor, object parameter)
+        public async Task<HttpResponseMessage> Execute<Tin>(Action<Tin> executor, Tin parameter)
         {
             Func<object> func = new Func<object>(() =>
             {
@@ -54,22 +58,56 @@ namespace BackEnd.Controllers
             return await ProtectedExecute(task, parameter, true);
         }
 
-        public async Task<HttpResponseMessage> Execute(Func<object> executor)
+        public async Task<HttpResponseMessage> Execute<Tin>(Func<Tin, Task> executor, Tin parameter)
         {
             Func<Task<object>> task = new Func<Task<object>>(
-                () => Task.Run(executor)
+                async () =>
+                {
+                    await executor(parameter);
+                    return null;
+                }
+            );
+
+            return await ProtectedExecute(task, parameter, true);
+        }
+
+        public async Task<HttpResponseMessage> Execute<Tout>(Func<Tout> executor)
+        {
+            return await ProtectedExecute(() => Task.Run(executor), null, false);
+        }
+
+        public async Task<HttpResponseMessage> Execute(Func<Task> executor)
+        {
+            Func<Task<object>> task = new Func<Task<object>>(
+                async () =>
+                {
+                    await executor();
+                    return null;
+                }
             );
 
             return await ProtectedExecute(task, null, false);
         }
 
-        public async Task<HttpResponseMessage> Execute<Tin, Tout>(Func<Tin, Task<Tout>> executor, Tin parameter)
+        public async Task<HttpResponseMessage> Execute<Tout>(Func<Task<Tout>> executor)
+        {
+            return await ProtectedExecute(executor, null, false);
+        }
+
+        public async Task<HttpResponseMessage> Execute<Tin, Tout>(Func<Tin, Tout> executor, Tin parameter)
         {
             Func<Task<Tout>> task = new Func<Task<Tout>>(
-                () => executor(parameter)
+                () => Task.Run(
+                    () => executor(parameter)
+                )
             );
 
             return await ProtectedExecute(task, parameter, true);
+        }
+
+        public async Task<HttpResponseMessage> Execute<Tin, Tout>(Func<Tin, Task<Tout>> executor, Tin parameter)
+        {
+            return await ProtectedExecute(() => executor(parameter), parameter, true);
         }
 
         protected string GetHeaderOrCookie(string name, bool throwIfNotPresented)
@@ -100,8 +138,75 @@ namespace BackEnd.Controllers
                 foreach (ModelError error in fieldState.Value.Errors)
                     errors.Add(error.ErrorMessage);
 
+            Collection<HttpParameterDescriptor> parameterDescriptors = Request.GetActionDescriptor().GetParameters();
+            if(parameterDescriptors != null)
+            {
+                foreach (HttpParameterDescriptor parameterDescriptor in parameterDescriptors)
+                {
+                    if (parameterDescriptor.GetCustomAttributes<IdentifiedAttribute>().Count == 0)
+                        continue;
+
+                    object parameterValue = ActionContext.ActionArguments[parameterDescriptor.ParameterName];
+
+                    if (parameterValue == null || !CheckIdentified(parameterValue))
+                    {
+                        errors.Add("All IdDto inheritors must specify id field in indentified-market requests");
+                        break;
+                    }
+                }
+            }
+
             if (errors.Count != 0)
                 throw new ValidationException(errors);
+        }
+
+        private bool CheckIdentified(object obj)
+        {
+            if (obj is IdDto idObj && !idObj.Id.HasValue)
+                return false;
+
+            Type type = obj.GetType();
+            if (obj is IEnumerable<object> collection)
+            {
+                if (!CheckTypeContainsIdentified(type.GetGenericArguments()[0]))
+                    return true;
+
+                return collection.All(item => CheckIdentified(item));
+            }
+
+            PropertyInfo[] properties = type.GetProperties().Where(
+                property => !property.PropertyType.IsValueType && !property.PropertyType.Equals(typeof(string))
+            ).ToArray();
+
+            foreach(PropertyInfo property in properties)
+            {
+                object value = property.GetValue(obj);
+
+                if (value == null)
+                {
+                    if (property.PropertyType.IsGenericType)
+                        continue;
+
+                    if (CheckTypeContainsIdentified(property.PropertyType))
+                        return false;
+                }
+                else if (!CheckIdentified(value))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool CheckTypeContainsIdentified(Type type)
+        {
+            if (typeof(IdDto).IsAssignableFrom(type))
+                return true;
+
+            return type.GetProperties().Where(
+                property => !property.PropertyType.IsValueType && !property.PropertyType.Equals(typeof(string))
+            ).Any(
+                property => CheckTypeContainsIdentified(property.PropertyType)
+            );
         }
 
         private HttpResponseMessage CreateErrorResponse(ServerException ex)

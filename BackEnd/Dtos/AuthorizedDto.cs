@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dtos
 {
-    public class AuthorizedDto<TDto> where TDto : IDto
+    public class AuthorizedDto<TDto> : IDto where TDto : IDto
     {
         [HeaderAutoWired]
         public SessionDto Session { get; set; }

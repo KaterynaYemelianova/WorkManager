@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DataAccess.Entities
+﻿namespace DataAccess.Entities
 {
-    public class EnterPointEntity : EntityBase
+    public class EnterPointEntity : PointBaseEntity
     {
+        public string PassCondition { get; set; }
+        public string PassConditionApiUrl { get; set; }
+        public string NotifyEnterApiUrl { get; set; }
+        public string NotifyLeaveApiUrl { get; set; }
     }
 }

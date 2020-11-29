@@ -1,7 +1,6 @@
 ﻿using DataAccess.Attributes;
-using System;
+
 using System.Collections.Generic;
-using System.Text;
 
 namespace DataAccess.Entities
 {
@@ -14,6 +13,6 @@ namespace DataAccess.Entities
         public IDictionary<AccountEntity, RoleEntity> Members { get; set; }
 
         [Ignore]
-        public IEnumerable<RoomEntity> Rooms { get; set; }
+        public ICollection<RoomEntity> Rooms { get; set; }
     }
 }

@@ -1,12 +1,22 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Dtos
 {
-    public class CompanyDto : NewCompanyDto
+    public class CompanyDto : IdDto, IDto
     {
-        [Required(ErrorMessage = "id is required")]
-        [JsonProperty("id")]
-        public int? Id { get; set; }
+        [Required(AllowEmptyStrings = false, ErrorMessage = "name is required")]
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("extra_data")]
+        public object ExtraData { get; set; }
+
+        [JsonProperty("members")]
+        public IEnumerable<AccountRoleDto> Members { get; set; }
+
+        [JsonProperty("rooms")]
+        public IEnumerable<RoomDto> Rooms { get; set; }
     }
 }

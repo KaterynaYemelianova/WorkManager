@@ -25,6 +25,18 @@ namespace BusinessLogic
             config.CreateMap<SignUpDto, AccountModel>()
                   .ForMember(model => model.FirstName, cnf => cnf.AddTransform(name => Util.Capitalize(name)))
                   .ForMember(model => model.LastName, cnf => cnf.AddTransform(name => Util.Capitalize(name)));
+
+            config.CreateMap<AccountRoleDto, AccountRoleModel>()
+                  .ForPath(model => model.Account.Id, cnf => cnf.MapFrom(dto => dto.AccountId))
+                  .ForPath(model => model.Role.Id, cnf => cnf.MapFrom(dto => dto.RoleId));
+
+            config.CreateMap<CheckPointDto, CheckPointModel>();
+            config.CreateMap<EnterPointDto, EnterPointModel>();
+            config.CreateMap<InteractionPointDto, InteractionPointModel>();
+            config.CreateMap<ControlPointDto, ControlPointModel>();
+
+            config.CreateMap<RoomDto, RoomModel>();
+            config.CreateMap<CompanyDto, CompanyModel>();
         }
     }
 }

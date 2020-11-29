@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dtos
 {
-    public class AccountRoleDto : IDto
+    public class AccountRoleDto : IdDto, IDto
     {
         [Required(ErrorMessage = "account_id is required")]
         [JsonProperty("account_id")]

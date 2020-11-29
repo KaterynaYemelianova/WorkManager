@@ -2,11 +2,11 @@
 
 namespace BusinessLogic.Models
 {
-    public enum RoleEnum
+    public enum RoleEnum : int
     {
-        WORKER,
-        MANAGER,
-        DIRECTOR,
-        SUPERADMIN
+        WORKER = 1,
+        MANAGER = 2,
+        DIRECTOR = 3,
+        SUPERADMIN = 4
     }
 }

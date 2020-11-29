@@ -30,6 +30,11 @@ namespace DataAccess
             builder.RegisterType<NoDependenciesRepo<RoleEntity>>().AsSelf().As<IRepo<RoleEntity>>().SingleInstance();
             builder.RegisterType<NoDependenciesRepo<AccountCompanyRoleEntity>>().AsSelf().As<IRepo<AccountCompanyRoleEntity>>().SingleInstance();
 
+            builder.RegisterType<NoDependenciesRepo<EnterPointEntity>>().AsSelf().As<IRepo<EnterPointEntity>>().SingleInstance();
+            builder.RegisterType<NoDependenciesRepo<CheckPointEntity>>().AsSelf().As<IRepo<CheckPointEntity>>().SingleInstance();
+            builder.RegisterType<NoDependenciesRepo<InteractionPointEntity>>().AsSelf().As<IRepo<InteractionPointEntity>>().SingleInstance();
+            builder.RegisterType<NoDependenciesRepo<ControlPointEntity>>().AsSelf().As<IRepo<ControlPointEntity>>().SingleInstance();
+
             return builder.Build();
         }
     }
