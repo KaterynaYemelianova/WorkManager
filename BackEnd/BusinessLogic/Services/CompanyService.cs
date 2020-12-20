@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace BusinessLogic.Services
 {
-    internal class CompanyService : ServiceBase, ICompanyService
+    internal class CompanyService : ICompanyService
     {
         private ICompanyRepo CompanyRepo = DataAccessDependencyHolder.Dependencies.Resolve<ICompanyRepo>();
         private IRoomRepo RoomRepo = DataAccessDependencyHolder.Dependencies.Resolve<IRoomRepo>();
@@ -28,7 +28,11 @@ namespace BusinessLogic.Services
         private IRepo<RoleEntity> RoleRepo = DataAccessDependencyHolder.Dependencies.Resolve<IRepo<RoleEntity>>();
 
         private IRepo<AccountCompanyRoleEntity> AccountCompanyRoleRepo = 
-            DataAccessDependencyHolder.Dependencies.Resolve<IRepo<AccountCompanyRoleEntity>>(); 
+            DataAccessDependencyHolder.Dependencies.Resolve<IRepo<AccountCompanyRoleEntity>>();
+
+        private SessionRoleCheckService SessionRoleCheckService =
+            BusinessLogicDependencyHolder.Dependencies.Resolve<SessionRoleCheckService>();
+
         public async Task<IEnumerable<CompanyModel>> GetCompaniesList()
         {
             IEnumerable<CompanyEntity> companyEntities = await CompanyRepo.Get();
@@ -45,7 +49,7 @@ namespace BusinessLogic.Services
 
         public async Task<CompanyModel> RegisterCompany(AuthorizedDto<CompanyDto> dto)
         {
-            SessionService.CheckSession(dto.Session);
+            SessionRoleCheckService.SessionService.CheckSession(dto.Session);
             Dictionary<int, List<AccountRoleDto>> memberGroups = dto.Data.Members?.GroupBy(
                 mem => mem.RoleId.Value
             ).ToDictionary(
@@ -58,9 +62,6 @@ namespace BusinessLogic.Services
 
             if (dto.Data.Members.Select(member => member.AccountId).Distinct().Count() != dto.Data.Members.Count())
                 throw new ValidationException("An account can not be used twice in the same company");
-
-            if (memberGroups.ContainsKey((int)RoleEnum.SUPERADMIN))
-                throw new ValidationException("Superadmin cannot be a member of the company");
 
             if (!memberGroups.ContainsKey((int)RoleEnum.DIRECTOR))
                 throw new ValidationException("The company must have at least one member in the role of director");
@@ -77,7 +78,7 @@ namespace BusinessLogic.Services
         public async Task<CompanyModel> UpdateCompany(AuthorizedDto<CompanyDto> dto)
         {
             int companyId = dto.Data.Id.Value;
-            await CheckSessionAndRole(dto.Session, companyId, RoleEnum.DIRECTOR);
+            await SessionRoleCheckService.CheckSessionAndRole(dto.Session, companyId, RoleEnum.DIRECTOR);
 
             CompanyEntity company = await CompanyRepo.GetById(companyId);
 
@@ -93,7 +94,7 @@ namespace BusinessLogic.Services
         public async Task DeleteCompany(AuthorizedDto<IdDto> dto)
         {
             int companyId = dto.Data.Id.Value;
-            await CheckSessionAndRole(dto.Session, companyId, RoleEnum.DIRECTOR);
+            await SessionRoleCheckService.CheckSessionAndRole(dto.Session, companyId, RoleEnum.DIRECTOR);
 
             await CompanyRepo.Delete(companyId);
         }
@@ -104,9 +105,9 @@ namespace BusinessLogic.Services
                 throw new ValidationException("company_id is required");
 
             int companyId = dto.Data.CompanyId.Value;
-            await CheckSessionAndRole(dto.Session, companyId, RoleEnum.DIRECTOR);
+            await SessionRoleCheckService.CheckSessionAndRole(dto.Session, companyId, RoleEnum.DIRECTOR);
 
-            RoomModel roomModel = DtoModelMapper.Mapper.Map<RoomModel>(dto);
+            RoomModel roomModel = DtoModelMapper.Mapper.Map<RoomModel>(dto.Data);
             RoomEntity roomEntity = EntityModelMapper.Mapper.Map<RoomEntity>(roomModel);
             
             CompanyEntity company = await CompanyRepo.GetById(companyId);
@@ -119,9 +120,9 @@ namespace BusinessLogic.Services
         public async Task<RoomModel> UpdateRoom(AuthorizedDto<RoomDto> dto)
         {
             RoomEntity room = await RoomRepo.GetById(dto.Data.Id.Value);
-            await CheckSessionAndRole(dto.Session, room.CompanyId, RoleEnum.DIRECTOR);
+            await SessionRoleCheckService.CheckSessionAndRole(dto.Session, room.CompanyId, RoleEnum.DIRECTOR);
 
-            RoomModel roomModel = DtoModelMapper.Mapper.Map<RoomModel>(dto);
+            RoomModel roomModel = DtoModelMapper.Mapper.Map<RoomModel>(dto.Data);
             RoomEntity roomEntity = EntityModelMapper.Mapper.Map<RoomEntity>(roomModel);
             
             RoomEntity updated = await RoomRepo.Update(roomEntity);
@@ -131,18 +132,20 @@ namespace BusinessLogic.Services
         public async Task DeleteRoom(AuthorizedDto<IdDto> dto)
         {
             RoomEntity room = await RoomRepo.GetById(dto.Data.Id.Value);
-            await CheckSessionAndRole(dto.Session, room.CompanyId, RoleEnum.DIRECTOR);
+            await SessionRoleCheckService.CheckSessionAndRole(dto.Session, room.CompanyId, RoleEnum.DIRECTOR);
 
             await RoomRepo.Delete(room.Id);
         }
 
-        public async Task AddMember(AuthorizedDto<AccountCompanyRoleDto> dto)
+        public async Task<AccountRoleModel> AddMember(AuthorizedDto<AccountCompanyRoleDto> dto)
         {
             CheckRoleValidity(dto.Data.RoleId.Value);
 
-            await CheckSessionAndRole(
+            await SessionRoleCheckService.CheckSessionAndRole(
                 dto.Session, dto.Data.CompanyId.Value, 
-                RoleCheckService.GetUpcheckingRoles((RoleEnum)dto.Data.RoleId.Value)
+                SessionRoleCheckService.RoleCheckService.GetUpcheckingRoles(
+                    (RoleEnum)dto.Data.RoleId.Value
+                )
             );
 
             AccountEntity account = await AccountRepo.GetById(dto.Data.AccountId.Value);
@@ -156,7 +159,10 @@ namespace BusinessLogic.Services
             RoleEntity role = await RoleRepo.GetById(dto.Data.RoleId.Value);
             company.Members.Add(account, role);
             
-            await CompanyRepo.Update(company);
+            CompanyEntity updated = await CompanyRepo.Update(company);
+            CompanyModel companyModel = EntityModelMapper.Mapper.Map<CompanyModel>(updated);
+
+            return companyModel.Members.FirstOrDefault(ar => ar.Account.Id == account.Id);
         }
 
         public async Task UpdateMember(AuthorizedDto<AccountCompanyRoleDto> dto)
@@ -173,9 +179,11 @@ namespace BusinessLogic.Services
             if(accountCompanyRole.CompanyId != dto.Data.CompanyId)
                 throw new MembershipNotFoundException();
 
-            await CheckSessionAndRole(
+            await SessionRoleCheckService.CheckSessionAndRole(
                 dto.Session, dto.Data.CompanyId.Value,
-                RoleCheckService.GetUpcheckingRoles((RoleEnum)accountCompanyRole.RoleId)
+                SessionRoleCheckService.RoleCheckService.GetUpcheckingRoles(
+                    (RoleEnum)accountCompanyRole.RoleId
+                )
             );
 
             if (accountCompanyRole.RoleId == (int)RoleEnum.DIRECTOR)
@@ -198,14 +206,48 @@ namespace BusinessLogic.Services
             if (accountCompanyRole == null)
                 throw new MembershipNotFoundException();
 
-            await CheckSessionAndRole(dto.Session, accountCompanyRole.CompanyId, RoleEnum.DIRECTOR);
+            await SessionRoleCheckService.CheckSessionAndRole(
+                dto.Session, accountCompanyRole.CompanyId, RoleEnum.DIRECTOR
+            );
             await AccountCompanyRoleRepo.Delete(accountCompanyRole.Id);
         }
 
         private void CheckRoleValidity(int roleId)
         {
-            if (roleId < (int)RoleEnum.WORKER || roleId > (int)RoleEnum.SUPERADMIN)
-                throw new ValidationException("role_id must be between 1 and 4");
+            if (roleId < (int)RoleEnum.WORKER || roleId > (int)RoleEnum.DIRECTOR)
+                throw new ValidationException("role_id must be between 1 and 3");
+        }
+
+        public async Task<IEnumerable<CompanyModel>> GetCompaniesListByMember(SessionDto dto)
+        {
+            SessionRoleCheckService.SessionService.CheckSession(dto);
+            IEnumerable<CompanyModel> companies = await GetCompaniesList();
+            return companies.Where(c => c.Members.Any(m => m.Account.Id == dto.UserId));
+        }
+
+        public async Task<bool> IsSuperAdmin(SessionDto dto)
+        {
+            SessionRoleCheckService.SessionService.CheckSession(dto);
+            AccountEntity account = await AccountRepo.GetById(dto.UserId);
+            return account.IsSuperadmin;
+        }
+
+        public async Task<RoleModel> GetRole(SessionDto dto, int companyId)
+        {
+            SessionRoleCheckService.SessionService.CheckSession(dto);
+
+            AccountEntity account = await AccountRepo.GetById(dto.UserId);
+            CompanyModel company = await GetCompanyById(companyId);
+
+            if (company == null)
+                throw new MembershipNotFoundException();
+
+            AccountRoleModel accountRole = company.Members.FirstOrDefault(member => member.Account.Id == dto.UserId);
+
+            if (accountRole == null)
+                throw new MembershipNotFoundException();
+
+            return accountRole.Role;
         }
     }
 }

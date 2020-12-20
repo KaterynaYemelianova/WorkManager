@@ -1,7 +1,9 @@
-﻿namespace BusinessLogic.ServiceContracts.PointServiceContracts
+﻿using Dtos;
+
+namespace BusinessLogic.ServiceContracts.PointServiceContracts
 {
     public interface IPointService
     {
-        void AddData(int pointId, int detectorId, object data);
+        void AddData(PointDataDto dto);
     }
 }

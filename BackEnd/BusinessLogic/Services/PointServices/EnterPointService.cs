@@ -1,10 +1,14 @@
-﻿using BusinessLogic.Models;
+﻿using Autofac;
+using BusinessLogic.Models;
 using BusinessLogic.Models.Data;
+using BusinessLogic.ServiceContracts;
 using BusinessLogic.ServiceContracts.PointServiceContracts;
 
 using DataAccess.Entities;
 
 using Dtos.PointActionDtos;
+
+using Exceptions.BusinessLogic;
 
 using System.Threading.Tasks;
 
@@ -18,6 +22,9 @@ namespace BusinessLogic.Services.PointServices
             ActionModels<EnterPointModel> models = GetActionModels(entities);
             ActionParseParameters parameters = GetActionParseParameters(models);
             parameters.Action = dto;
+
+            IConditionParseService ConditionParseService =
+                BusinessLogicDependencyHolder.Dependencies.Resolve<IConditionParseService>();
 
             bool localCondition = entities.Point.PassCondition != null && 
                 ConditionParseService.ParseCondition(entities.Point.PassCondition, parameters);
@@ -36,6 +43,9 @@ namespace BusinessLogic.Services.PointServices
             ActionEntities<EnterPointEntity> entities = await GetActionEntities(dto);
             ActionModels<EnterPointModel> models = GetActionModels(entities);
 
+            if (!await CheckEnterAbility(dto))
+                throw new ForbiddenActionException();
+
             MemberLocationService.NotifyEnterAction(models.Account, models.Room);
         }
 
@@ -43,7 +53,6 @@ namespace BusinessLogic.Services.PointServices
         {
             ActionEntities<EnterPointEntity> entities = await GetActionEntities(dto);
             ActionModels<EnterPointModel> models = GetActionModels(entities);
-
             MemberLocationService.NotifyLeaveAction(models.Account, models.Room);
         }
     }

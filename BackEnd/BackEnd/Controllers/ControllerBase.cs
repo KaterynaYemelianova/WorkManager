@@ -20,6 +20,7 @@ using System.Net.Http.Headers;
 using System.Linq;
 using System.Web.Http.Controllers;
 using Dtos;
+using Newtonsoft.Json.Linq;
 
 namespace BackEnd.Controllers
 {
@@ -40,7 +41,12 @@ namespace BackEnd.Controllers
             { typeof(NotAppropriateRoleException), HttpStatusCode.Forbidden },
             { typeof(WrongEncryptionException), HttpStatusCode.BadRequest },
             { typeof(MembershipDuplicationException), HttpStatusCode.Conflict },
-            { typeof(MembershipNotFoundException), HttpStatusCode.NotFound }
+            { typeof(MembershipNotFoundException), HttpStatusCode.NotFound },
+            { typeof(AlreadyInsideException), HttpStatusCode.Conflict },
+            { typeof(NotInsideException), HttpStatusCode.NotFound },
+            { typeof(PointNotFoundException), HttpStatusCode.NotFound },
+            { typeof(ForbiddenActionException), HttpStatusCode.Forbidden },
+            { typeof(ExpressionParseException), HttpStatusCode.NotAcceptable }
         };
 
         public async Task<HttpResponseMessage> Execute<Tin>(Action<Tin> executor, Tin parameter)
@@ -164,6 +170,9 @@ namespace BackEnd.Controllers
         {
             if (obj is IdDto idObj && !idObj.Id.HasValue)
                 return false;
+
+            if (obj is JObject)
+                return true;
 
             Type type = obj.GetType();
             if (obj is IEnumerable<object> collection)

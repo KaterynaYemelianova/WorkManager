@@ -8,9 +8,11 @@ using Dtos.PointActionDtos;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace BackEnd.Controllers.PointControllers
 {
+    [EnableCors("*", "*", "*")]
     public class EnterPointController : PointController<IEnterPointService>
     {
         private IEnterPointService EnterPointService = BusinessLogicDependencyHolder.Dependencies.Resolve<IEnterPointService>();

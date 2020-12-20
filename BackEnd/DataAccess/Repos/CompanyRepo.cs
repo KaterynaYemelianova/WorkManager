@@ -55,9 +55,13 @@ namespace DataAccess.Repos
                         acrGroup => roles[acrGroup.RoleId]
                     );
                 }
+                else
+                    company.Members = new Dictionary<AccountEntity, RoleEntity>();
 
                 if (rooms.ContainsKey(company.Id))
                     company.Rooms = rooms[company.Id];
+                else
+                    company.Rooms = new List<RoomEntity>();
             }
 
             return entities;

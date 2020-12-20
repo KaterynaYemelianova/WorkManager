@@ -8,7 +8,7 @@ namespace BusinessLogic.Models.Data
         public RoleEnum Role { get; set; }
         public PointActionBaseDto Action { get; set; }
         public PointBaseModel Point { get; set; }
-        public object RoomExtraData { get; set; }
-        public object CompanyExtraData { get; set; }
+        public RoomModel Room { get; set; }
+        public CompanyModel Company { get; set; }
     }
 }

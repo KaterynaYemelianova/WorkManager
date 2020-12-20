@@ -33,11 +33,12 @@ namespace BusinessLogic
             builder.RegisterType<RoleCheckService>().As<IRoleCheckService>().SingleInstance();
             builder.RegisterType<CompanyService>().As<ICompanyService>().SingleInstance();
 
-            builder.RegisterType<EnterPointService>().As<IEnterPointService>().SingleInstance();
-            builder.RegisterType<CheckPointService>().As<ICheckPointService>().SingleInstance();
-            builder.RegisterType<InteractionPointService>().As<IInteractionPointService>().SingleInstance();
-            builder.RegisterType<ControlPointService>().As<IControlPointService>().SingleInstance();
+            builder.RegisterType<EnterPointService>().As<IEnterPointService>().AsSelf().SingleInstance();
+            builder.RegisterType<CheckPointService>().As<ICheckPointService>().AsSelf().SingleInstance();
+            builder.RegisterType<InteractionPointService>().As<IInteractionPointService>().AsSelf().SingleInstance();
+            builder.RegisterType<ControlPointService>().As<IControlPointService>().AsSelf().SingleInstance();
 
+            builder.RegisterType<SessionRoleCheckService>().AsSelf().SingleInstance();
             builder.RegisterType<MemberLocationService>().As<IMemberLocationService>().AsSelf().SingleInstance();
             builder.RegisterType<ConditionParseService>().As<IConditionParseService>().AsSelf().SingleInstance();
             builder.RegisterType<PointExternalApiService>().AsSelf().SingleInstance();

@@ -1,17 +1,19 @@
 ﻿using Dtos;
 using Dtos.Attributes;
 
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-
 using BusinessLogic;
 using BusinessLogic.ServiceContracts;
 
 using Autofac;
 
+using System.Web.Http;
+using System.Web.Http.Cors;
+using System.Net.Http;
+using System.Threading.Tasks;
+
 namespace BackEnd.Controllers
 {
+    [EnableCors("*", "*", "*")]
     public class CompanyController : ControllerBase
     {
         private ICompanyService CompanyService = BusinessLogicDependencyHolder.Dependencies.Resolve<ICompanyService>();
@@ -26,6 +28,24 @@ namespace BackEnd.Controllers
         public async Task<HttpResponseMessage> Get(int id)
         {
             return await Execute(() => CompanyService.GetCompanyById(id));
+        }
+
+        [HttpPost]
+        public async Task<HttpResponseMessage> Get([FromBody] SessionDto dto)
+        {
+            return await Execute(d => CompanyService.GetCompaniesListByMember(d),dto);
+        }
+
+        [HttpPost]
+        public async Task<HttpResponseMessage> IsSuperAdmin([FromBody] SessionDto dto)
+        {
+            return await Execute(d => CompanyService.IsSuperAdmin(d), dto);
+        }
+
+        [HttpPost]
+        public async Task<HttpResponseMessage> GetUserRole([FromBody] SessionDto dto, int companyId)
+        {
+            return await Execute(d => CompanyService.GetRole(d, companyId), dto);
         }
 
         [HttpPost]

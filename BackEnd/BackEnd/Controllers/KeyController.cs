@@ -1,14 +1,16 @@
 ﻿using Autofac;
 
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-
 using BusinessLogic.ServiceContracts;
 using BusinessLogic;
 
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Cors;
+
 namespace BackEnd.Controllers
 {
+    [EnableCors("*", "*", "*")]
     public class KeyController : ControllerBase
     {
         private static IAsymmetricEncryptionService AsymmetricEncryptionService = 

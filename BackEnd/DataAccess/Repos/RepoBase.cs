@@ -145,10 +145,10 @@ namespace DataAccess.Repos
                 object storedValue = property.GetValue(current);
                 object updatedValue = property.GetValue(entity);
 
-                if (storedValue.Equals(updatedValue))
+                if (storedValue == null && updatedValue == null)
                     continue;
 
-                if (string.IsNullOrEmpty(storedValue as string) && string.IsNullOrEmpty(updatedValue as string))
+                if (storedValue != null && storedValue.Equals(updatedValue))
                     continue;
 
                 changedColumns.Add(GetColumnByProperty(property), updatedValue);
@@ -238,14 +238,24 @@ namespace DataAccess.Repos
             if (oldCollection == null)
                 oldCollection = new List<T>();
 
-            IEnumerable<T> toUpdate = oldCollection.Intersect(newCollection);
-            IEnumerable<T> toDelete = oldCollection.Except(newCollection);
-            IEnumerable<T> toInsert = newCollection.Except(oldCollection);
+            IEnumerable<T> toUpdate = newCollection.Where(
+                newitem => oldCollection.Contains(newitem)
+            );
+
+            IEnumerable<T> toDelete = oldCollection.Where(
+                olditem => !newCollection.Contains(olditem)
+            );
+
+            IEnumerable<T> toInsert = newCollection.Where(
+                newitem => !oldCollection.Contains(newitem)
+            );
 
             List<T> result = new List<T>();
+            PropertyInfo foreignKeyProperty = collectionRepo.GetPropertyByExpression(foreignKey);
 
             foreach (T updating in toUpdate)
             {
+                foreignKeyProperty.SetValue(updating, parent.Id);
                 T updated = await collectionRepo.Update(updating);
                 result.Add(updated);
             }
@@ -253,8 +263,6 @@ namespace DataAccess.Repos
             await collectionRepo.Delete(
                 toDelete.Select(deleting => deleting.Id).ToArray()
             );
-
-            PropertyInfo foreignKeyProperty = collectionRepo.GetPropertyByExpression(foreignKey);
 
             foreach(T inserting in toInsert)
             {
@@ -348,7 +356,7 @@ namespace DataAccess.Repos
                 string name = reader.GetName(i);
                 PropertyInfo property = GetPropertyByColumn(name);
 
-                if (property != null)
+                if (property != null && !reader.IsDBNull(i))
                 {
                     object converted = Convert.ChangeType(reader[name], property.PropertyType);
                     property.SetValue(entity, converted);

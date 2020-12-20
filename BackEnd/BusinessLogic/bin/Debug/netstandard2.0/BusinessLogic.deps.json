@@ -16,7 +16,8 @@
           "Exceptions": "1.0.0",
           "NETStandard.Library": "2.0.3",
           "PemUtils": "3.0.0.82",
-          "RestSharp": "106.11.7"
+          "RestSharp": "106.11.7",
+          "U4.NCalc-NetStandard": "2.2.0"
         },
         "runtime": {
           "BusinessLogic.dll": {}
@@ -252,6 +253,14 @@
           "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {
             "assemblyVersion": "4.2.0.0",
             "fileVersion": "4.6.27129.4"
+          }
+        }
+      },
+      "U4.NCalc-NetStandard/2.2.0": {
+        "runtime": {
+          "lib/netstandard2.0/NCalc.dll": {
+            "assemblyVersion": "3.5.0.2",
+            "fileVersion": "3.5.0.2"
           }
         }
       },
@@ -501,6 +510,13 @@
       "sha512": "sha512-BG/TNxDFv0svAzx8OiMXDlsHfGw623BZ8tCXw4YLhDFDvDhNUEV58jKYMGRnkbJNm7c3JNNJDiN7JBMzxRBR2w==",
       "path": "system.threading.tasks.extensions/4.5.2",
       "hashPath": "system.threading.tasks.extensions.4.5.2.nupkg.sha512"
+    },
+    "U4.NCalc-NetStandard/2.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0Y8zt2baHMKnxx2XSlRucx5t0AMfjoTq7lNHWQlcR6vzMf9bdBZ7sotP9xn/XXRFmgAIAt5xaGZNN5aLe9jFPQ==",
+      "path": "u4.ncalc-netstandard/2.2.0",
+      "hashPath": "u4.ncalc-netstandard.2.2.0.nupkg.sha512"
     },
     "DataAccess/1.0.0": {
       "type": "project",

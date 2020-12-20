@@ -44,6 +44,5 @@ namespace BusinessLogic.Services.PointServices
                 Company = companyEntity
             };
         }
-       
     }
 }

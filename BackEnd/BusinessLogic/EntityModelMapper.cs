@@ -50,7 +50,7 @@ namespace BusinessLogic
         {
             public IDictionary<AccountEntity, RoleEntity> Convert(IEnumerable<AccountRoleModel> sourceMember, ResolutionContext context)
             {
-                return sourceMember.ToDictionary(
+                return sourceMember?.ToDictionary(
                     ar => Mapper.Map<AccountEntity>(ar.Account),
                     ar => Mapper.Map<RoleEntity>(ar.Role)
                 );
@@ -61,7 +61,7 @@ namespace BusinessLogic
         {
             public IEnumerable<AccountRoleModel> Convert(IDictionary<AccountEntity, RoleEntity> sourceMember, ResolutionContext context)
             {
-                return sourceMember.Select(
+                return sourceMember?.Select(
                     ar => new AccountRoleModel
                     {
                         Account = Mapper.Map<AccountModel>(ar.Key),

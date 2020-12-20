@@ -44,15 +44,23 @@ namespace DataAccess.Repos
             {
                 if (enterPoints.ContainsKey(room.Id))
                     room.EnterPoints = enterPoints[room.Id];
+                else
+                    room.EnterPoints = new List<EnterPointEntity>();
 
                 if (checkPoints.ContainsKey(room.Id))
                     room.CheckPoints = checkPoints[room.Id];
+                else
+                    room.CheckPoints = new List<CheckPointEntity>();
 
                 if (interactionPoints.ContainsKey(room.Id))
                     room.InteractionPoints = interactionPoints[room.Id];
+                else
+                    room.InteractionPoints = new List<InteractionPointEntity>();
 
                 if (controlPoints.ContainsKey(room.Id))
                     room.ControlPoints = controlPoints[room.Id];
+                else
+                    room.ControlPoints = new List<ControlPointEntity>();
             }
 
             return entities;

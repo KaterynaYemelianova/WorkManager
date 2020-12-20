@@ -17,20 +17,21 @@ namespace BusinessLogic.ServiceContracts
     internal class RoleCheckService : IRoleCheckService
     {
         private static ICompanyRepo CompanyRepo = DataAccessDependencyHolder.Dependencies.Resolve<ICompanyRepo>();
+        private static IAccountRepo AccountRepo = DataAccessDependencyHolder.Dependencies.Resolve<IAccountRepo>();
 
         public async Task<RoleEnum> GetRole(int userId, int companyId)
         {
             CompanyEntity companyEntity = await CompanyRepo.GetById(companyId);
 
             if (companyEntity == null)
-                throw new NotFoundException("Company was not found");
+                throw new NotFoundException("Company");
 
             KeyValuePair<AccountEntity, RoleEntity> accountRole = companyEntity.Members.FirstOrDefault(
                 member => member.Key.Id == userId
             );
 
             if (accountRole.Key == null || accountRole.Value == null)
-                throw new NotFoundException("Role was not found");
+                throw new NotFoundException("Role");
 
             return (RoleEnum)accountRole.Value.Id;
         }
@@ -38,12 +39,9 @@ namespace BusinessLogic.ServiceContracts
         public RoleEnum[] GetUpcheckingRoles(RoleEnum role)
         {
             if (role == RoleEnum.DIRECTOR || role == RoleEnum.MANAGER)
-                return new RoleEnum[] { RoleEnum.DIRECTOR, RoleEnum.SUPERADMIN };
+                return new RoleEnum[] { RoleEnum.DIRECTOR };
 
-            if (role == RoleEnum.SUPERADMIN)
-                return new RoleEnum[] { RoleEnum.SUPERADMIN };
-
-            return new RoleEnum[] { RoleEnum.MANAGER, RoleEnum.DIRECTOR, RoleEnum.SUPERADMIN };
+            return new RoleEnum[] { RoleEnum.MANAGER, RoleEnum.DIRECTOR };
         }
 
         public async Task<bool> IsInRole(RoleEnum role, int userId, int companyId, bool throwIfFailed = true)
@@ -54,6 +52,16 @@ namespace BusinessLogic.ServiceContracts
                 throw new NotAppropriateRoleException(role.ToString());
 
             return roleModel == role;
+        }
+
+        public async Task<bool> IsSuperadmin(int userId)
+        {
+            AccountEntity account = await AccountRepo.GetById(userId);
+
+            if (account == null)
+                throw new AccountNotFoundException();
+
+            return account.IsSuperadmin;
         }
     }
 }

@@ -337,6 +337,15 @@
           "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {}
         }
       },
+      "U4.NCalc-NetStandard/2.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/NCalc.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NCalc.dll": {}
+        }
+      },
       "DataAccess/1.0.0": {
         "type": "project",
         "framework": ".NETStandard,Version=v2.0",
@@ -1358,6 +1367,20 @@
         "version.txt"
       ]
     },
+    "U4.NCalc-NetStandard/2.2.0": {
+      "sha512": "0Y8zt2baHMKnxx2XSlRucx5t0AMfjoTq7lNHWQlcR6vzMf9bdBZ7sotP9xn/XXRFmgAIAt5xaGZNN5aLe9jFPQ==",
+      "type": "package",
+      "path": "u4.ncalc-netstandard/2.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net45/NCalc.dll",
+        "lib/netstandard1.3/NCalc.dll",
+        "lib/netstandard2.0/NCalc.dll",
+        "u4.ncalc-netstandard.2.2.0.nupkg.sha512",
+        "u4.ncalc-netstandard.nuspec"
+      ]
+    },
     "DataAccess/1.0.0": {
       "type": "project",
       "path": "../DataAccess/DataAccess.csproj",
@@ -1383,7 +1406,8 @@
       "Exceptions >= 1.0.0",
       "NETStandard.Library >= 2.0.3",
       "PemUtils >= 3.0.0.82",
-      "RestSharp >= 106.11.7"
+      "RestSharp >= 106.11.7",
+      "U4.NCalc-NetStandard >= 2.2.0"
     ]
   },
   "packageFolders": {
@@ -1461,6 +1485,10 @@
           "RestSharp": {
             "target": "Package",
             "version": "[106.11.7, )"
+          },
+          "U4.NCalc-NetStandard": {
+            "target": "Package",
+            "version": "[2.2.0, )"
           }
         },
         "imports": [

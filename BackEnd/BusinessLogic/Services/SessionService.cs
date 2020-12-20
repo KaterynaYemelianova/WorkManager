@@ -35,6 +35,7 @@ namespace BusinessLogic.Services
 
             SessionModel session = new SessionModel()
             {
+                UserId = accountId,
                 Token = token,
                 ExpiredAt = expires
             };

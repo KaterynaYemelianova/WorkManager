@@ -6,6 +6,9 @@ namespace BusinessLogic.Models
 {
     public class SessionModel
     {
+        [JsonProperty("user_id")]
+        public int UserId { get; set; }
+
         [JsonProperty("session_token")]
         public string Token { get; set; }
 

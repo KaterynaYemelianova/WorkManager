@@ -49,7 +49,7 @@ namespace NUnitTestProject
                 Name = "Test company",
                 Members = new Dictionary<AccountEntity, RoleEntity>()
                  {
-                     { accounts.ElementAt(0), roles.ElementAt(3) },
+                     { accounts.ElementAt(0), roles.ElementAt(2) },
                      { accounts.ElementAt(1), roles.ElementAt(2) }
                  },
                 Rooms = new List<RoomEntity>()
@@ -69,7 +69,7 @@ namespace NUnitTestProject
                          {
                              new EnterPointEntity()
                              {
-
+                                  PassCondition = "{user.role} >= 2 && {control[0].pin[0].data.avg()} < 0.1 && {roomloc.count() < 5}"
                              }
                          }
                      }

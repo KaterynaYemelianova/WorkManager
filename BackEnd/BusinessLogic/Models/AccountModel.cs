@@ -14,5 +14,8 @@ namespace BusinessLogic.Models
         public string LastName { get; set; }
         [JsonIgnore]
         public string PasswordHash { get; set; }
+
+        [JsonProperty("is_superadmin")]
+        public bool IsSuperadmin { get; set; }
     }
 }

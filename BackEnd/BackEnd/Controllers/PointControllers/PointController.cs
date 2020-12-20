@@ -3,6 +3,8 @@
 using BusinessLogic;
 using BusinessLogic.ServiceContracts.PointServiceContracts;
 
+using Dtos;
+
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -14,11 +16,10 @@ namespace BackEnd.Controllers.PointControllers
         private IPointService PointService = BusinessLogicDependencyHolder.Dependencies.Resolve<TPointService>();
 
         [HttpPost]
-        public async Task<HttpResponseMessage> AddData([FromBody] object data, int pointId, int detectorId)
+        public async Task<HttpResponseMessage> AddData([FromBody] PointDataDto dto)
         {
             return await Execute(
-                dataObj => PointService.AddData(pointId, detectorId, dataObj),
-                data
+                d => PointService.AddData(d), dto
             );
         }
     }
